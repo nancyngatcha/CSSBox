@@ -2155,7 +2155,6 @@ public class BlockBox extends ElementBox
      *  http://www.w3.org/TR/CSS21/visudet.html#Computing_widths_and_margins .
      * @param width the specified width or null for auto
      * @param exact true if this is the exact width, false when it's a max/min width
-     * @param cblock containing block
      * @param update <code>true</code>, if we're just updating the size to a new containing block size
      */
     protected void computeWidths(TermLengthOrPercent width, boolean auto, boolean exact, boolean update)
