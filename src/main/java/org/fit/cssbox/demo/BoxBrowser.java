@@ -89,15 +89,6 @@ public class BoxBrowser
     
     protected JFrame mainWindow = null;  //  @jve:decl-index=0:visual-constraint="67,17"
     protected JPanel mainPanel = null;
-
-
-
-
-
-
-
-
-
     protected JPanel urlPanel = null;
     protected JPanel contentPanel = null;
     protected JPanel structurePanel = null;
