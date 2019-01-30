@@ -69,6 +69,8 @@ abstract public class ElementBox extends Box
     public static final CSSProperty.Display DISPLAY_TABLE_COLUMN = CSSProperty.Display.TABLE_COLUMN;
     public static final CSSProperty.Display DISPLAY_TABLE_CELL = CSSProperty.Display.TABLE_CELL;
     public static final CSSProperty.Display DISPLAY_TABLE_CAPTION = CSSProperty.Display.TABLE_CAPTION;
+    public static final CSSProperty.Display DISPLAY_FLEX = CSSProperty.Display.FLEX;
+    public static final CSSProperty.Display DISPLAY_INLINE_FLEX = CSSProperty.Display.INLINE_FLEX;
     
     public static final CSSProperty.Transform TRANSFORM_NONE = CSSProperty.Transform.NONE;
     
