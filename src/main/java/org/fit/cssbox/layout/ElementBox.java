@@ -124,6 +124,8 @@ abstract public class ElementBox extends Box
     
     /** The map of related pseudo-elements (if any) */
     protected Map<Selector.PseudoElementType, ElementBox> pseudoElements;
+
+    protected LayoutManager typeoflayout;
     
     //============================== Computed style ======================
     
@@ -1301,7 +1303,7 @@ abstract public class ElementBox extends Box
         
         display = style.getProperty("display");
         if (display == null) display = CSSProperty.Display.INLINE;
-        
+
         CSSProperty.Float floating = style.getProperty("float");
         if (floating == null) floating = BlockBox.FLOAT_NONE;
         
@@ -1498,6 +1500,22 @@ abstract public class ElementBox extends Box
                     scontext.clear();
             }
         }
+    }
+
+
+    /**
+     * Layout the sub-elements.
+     *
+     * @param availw    Maximal width available to the child elements
+     * @param force     Use the area even if the used width is greater than maxwidth
+     * @param linestart Indicates whether the element is placed at the line start
+     * @return <code>true</code> if the box has been succesfully placed
+     */
+    @Override
+    public boolean doLayout(int availw, boolean force, boolean linestart) {
+       LayoutManager manager = typeoflayout;
+        manager.doLayout(availw, force, linestart);
+        return true;
     }
     
 }

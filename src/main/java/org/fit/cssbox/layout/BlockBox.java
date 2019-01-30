@@ -214,8 +214,10 @@ public class BlockBox extends ElementBox
         topstatic = false;
         leftstatic = false;
         widthAdjust = 0;
-        
-      	if (style != null)
+
+        typeoflayout = new BlockBoxLayoutManager(this);
+
+        if (style != null)
       		loadBlockStyle();
     }
 
@@ -258,7 +260,9 @@ public class BlockBox extends ElementBox
         nested = src.nested;
         startChild = src.startChild;
         endChild = src.endChild;
-        
+
+        typeoflayout = new BlockBoxLayoutManager(this);
+
         setStyle(src.getStyle());
     }
     
@@ -279,6 +283,8 @@ public class BlockBox extends ElementBox
         topstatic = src.topstatic;
         leftstatic = src.leftstatic;
         domParent = src.domParent;
+
+        typeoflayout = src.typeoflayout;
         if (src.declMargin != null)
         	declMargin = new LengthSet(src.declMargin);
         clipRegion = src.clipRegion;
