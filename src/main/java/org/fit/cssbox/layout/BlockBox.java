@@ -214,7 +214,9 @@ public class BlockBox extends ElementBox
         topstatic = false;
         leftstatic = false;
         widthAdjust = 0;
-        
+
+        typeofLayout = new BlockBoxLayoutManager(this);
+
       	if (style != null)
       		loadBlockStyle();
     }
@@ -258,6 +260,8 @@ public class BlockBox extends ElementBox
         nested = src.nested;
         startChild = src.startChild;
         endChild = src.endChild;
+
+        typeofLayout = new BlockBoxLayoutManager(this);
         
         setStyle(src.getStyle());
     }
@@ -279,6 +283,9 @@ public class BlockBox extends ElementBox
         topstatic = src.topstatic;
         leftstatic = src.leftstatic;
         domParent = src.domParent;
+
+        typeofLayout = src.typeofLayout;
+
         if (src.declMargin != null)
         	declMargin = new LengthSet(src.declMargin);
         clipRegion = src.clipRegion;
@@ -400,6 +407,11 @@ public class BlockBox extends ElementBox
     {
         return floatY;
     }
+
+
+
+
+
     
     /** Returns true if the box is in the normal text flow (not absolutely
      * positioned nor floating) */
@@ -823,19 +835,19 @@ public class BlockBox extends ElementBox
             setContentWidth(pref);
             updateChildSizes();
         }
-        
+
         //the width should be fixed from this point
         widthComputed = true;
-        
+
         /* Always try to use the full width. If the box is not in flow, its width
          * is updated after the layout */
         setAvailableWidth(totalWidth());
-        
+
         if (!contblock)  //block elements containing inline elements only
             layoutInline();
         else //block elements containing block elements
             layoutBlocks();
-        
+
         //allways fits as well possible
         return true;
     }
@@ -2155,7 +2167,7 @@ public class BlockBox extends ElementBox
      *  http://www.w3.org/TR/CSS21/visudet.html#Computing_widths_and_margins .
      * @param width the specified width or null for auto
      * @param exact true if this is the exact width, false when it's a max/min width
-     * @param cblock containing block
+    // * @param cblock containing block
      * @param update <code>true</code>, if we're just updating the size to a new containing block size
      */
     protected void computeWidths(TermLengthOrPercent width, boolean auto, boolean exact, boolean update)
@@ -2509,7 +2521,7 @@ public class BlockBox extends ElementBox
     
     /**
      * Computes the collapsed margin height from two adjoining margin heights.
-     * @see http://www.w3.org/TR/CSS22/box.html#collapsing-margins
+    // * @see http://www.w3.org/TR/CSS22/box.html#collapsing-margins
      * @param m1 The first margin height
      * @param m2 The second margin height
      * @return The collapsed margin height

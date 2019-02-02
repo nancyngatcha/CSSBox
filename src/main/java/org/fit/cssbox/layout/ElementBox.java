@@ -124,6 +124,8 @@ abstract public class ElementBox extends Box
     
     /** The map of related pseudo-elements (if any) */
     protected Map<Selector.PseudoElementType, ElementBox> pseudoElements;
+
+    protected LayoutManager typeofLayout;
     
     //============================== Computed style ======================
     
@@ -1499,5 +1501,12 @@ abstract public class ElementBox extends Box
             }
         }
     }
-    
+
+
+    @Override
+    public boolean doLayout(int avail, boolean force, boolean linestart) {
+        LayoutManager lm = typeofLayout;
+        typeofLayout.doLayout(avail, force, linestart);
+        return true;
+    }
 }
