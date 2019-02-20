@@ -1,6 +1,6 @@
 package org.fit.cssbox.layout;
 
-public class BlockBoxLayoutManager extends LayoutManager {
+public class BlockBoxLayoutManager implements LayoutManager {
 
     private BlockBox bbox;
 

@@ -1,8 +1,6 @@
 package org.fit.cssbox.layout;
 
-public class GridLayoutManager extends LayoutManager {
-
-
+public class GridLayoutManager implements LayoutManager {
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart) {
         return false;

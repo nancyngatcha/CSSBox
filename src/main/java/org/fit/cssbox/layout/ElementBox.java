@@ -82,6 +82,9 @@ abstract public class ElementBox extends Box
     public static final CSSProperty.WhiteSpace WHITESPACE_NOWRAP = CSSProperty.WhiteSpace.NOWRAP;
     public static final CSSProperty.WhiteSpace WHITESPACE_PRE_WRAP = CSSProperty.WhiteSpace.PRE_WRAP;
     public static final CSSProperty.WhiteSpace WHITESPACE_PRE_LINE = CSSProperty.WhiteSpace.PRE_LINE;
+
+    public static final CSSProperty.Display DISPLAY_GRID = CSSProperty.Display.GRID;
+    public static final CSSProperty.Display DISPLAY_INLINE_GRD = CSSProperty.Display.INLINE_GRID;
     
     /** Default line height if nothing or 'normal' is specified */
     private static final float DEFAULT_LINE_HEIGHT = 1.12f;
@@ -1506,7 +1509,7 @@ abstract public class ElementBox extends Box
     @Override
     public boolean doLayout(int avail, boolean force, boolean linestart) {
         LayoutManager lm = typeofLayout;
-        typeofLayout.doLayout(avail, force, linestart);
+        lm.doLayout(avail, force, linestart);
         return true;
     }
 }

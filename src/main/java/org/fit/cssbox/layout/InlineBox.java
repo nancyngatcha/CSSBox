@@ -79,6 +79,8 @@ public class InlineBox extends ElementBox implements InlineElement
     {
         super.copyValues(src);
         valign = src.valign;
+
+        typeofLayout = src.typeofLayout;
     }
     
     @Override
@@ -256,7 +258,7 @@ public class InlineBox extends ElementBox implements InlineElement
         return minDescendantY;
     }
 
-    /*******************************************************************************************************************/
+    /****************************************************************************************************************************************/
 
     public LineBox getCurline() {
         return curline;
@@ -288,7 +290,7 @@ public class InlineBox extends ElementBox implements InlineElement
     public void setHalflead(int halflead) {
         this.halflead = halflead;
     }
-    /*******************************************************************************************************************/
+    /***************************************************************************************************************************************/
     //========================================================================
     
     @Override
@@ -305,125 +307,10 @@ public class InlineBox extends ElementBox implements InlineElement
 	
     @Override
     public boolean mayContainBlocks()
-    {
-    	return false;
-    }
-    
-//    /** Compute the width and height of this element. Layout the sub-elements.
-//     * @param availw Maximal width available to the child elements
-//     * @param force Use the area even if the used width is greater than maxwidth
-//     * @param linestart Indicates whether the element is placed at the line start
-//     * @return True if the box has been succesfully placed
-//     */
-//    @Override
-//    public boolean doLayout(int availw, boolean force, boolean linestart)
-//    {
-//        //if (getElement() != null && getElement().getAttribute("id").equals("mojo"))
-//        //  System.out.println("jo!");
-//        //Skip if not displayed
-//        if (!displayed)
-//        {
-//            content.setSize(0, 0);
-//            bounds.setSize(0, 0);
-//            return true;
-//        }
-//
-//        setAvailableWidth(availw);
-//
-//        curline = new LineBox(this, startChild, 0);
-//        int wlimit = getAvailableContentWidth();
-//        int x = 0; //current x
-//        boolean ret = true;
-//        rest = null;
-//
-//        int lastbreak = startChild; //last possible position of a line break
-//        collapsedCompletely = true;
-//
-//        for (int i = startChild; i < endChild; i++)
-//        {
-//            Box subbox = getSubBox(i);
-//            if (subbox.canSplitBefore())
-//            	lastbreak = i;
-//            //when forcing, force the first child only and the children before
-//            //the first possible break
-//            boolean f = force && (i == startChild || lastbreak == startChild);
-//            boolean fit = subbox.doLayout(wlimit - x, f, linestart && (i == startChild));
-//            if (fit) //something has been placed
-//            {
-//                if (subbox instanceof Inline)
-//                {
-//                    subbox.setPosition(x,  0); //the y position will be updated later
-//                    x += subbox.getWidth();
-//                    curline.considerBox((Inline) subbox);
-//                    if (((Inline) subbox).finishedByLineBreak())
-//                        lineBreakStop = true;
-//                    if (!((Inline) subbox).collapsedCompletely())
-//                        collapsedCompletely = false;
-//                }
-//                else
-//                	log.debug("Warning: doLayout(): subbox is not inline: " + subbox);
-//                if (subbox.getRest() != null) //is there anything remaining?
-//                {
-//                    InlineBox rbox = copyBox();
-//                    rbox.splitted = true;
-//                    rbox.splitid = splitid + 1;
-//                    rbox.setStartChild(i); //next starts with me...
-//                    rbox.nested.setElementAt(subbox.getRest(), i); //..but only with the rest
-//                    rbox.adoptChildren();
-//                    setEndChild(i+1); //...and this box stops with this element
-//                    rest = rbox;
-//                    break;
-//                }
-//                else if (lineBreakStop) //nothing remained but there was a line break
-//                {
-//                    if (i + 1 < endChild) //some children remaining
-//                    {
-//                        InlineBox rbox = copyBox();
-//                        rbox.splitted = true;
-//                        rbox.splitid = splitid + 1;
-//                        rbox.setStartChild(i + 1); //next starts with the next one
-//                        rbox.adoptChildren();
-//                        setEndChild(i+1); //...and this box stops with this element
-//                        rest = rbox;
-//                    }
-//                    break;
-//                }
-//            }
-//            else //nothing from the child has been placed
-//            {
-//                if (lastbreak == startChild) //no children have been placed, give up
-//                {
-//                    ret = false;
-//                    break;
-//                }
-//                else //some children have been placed, contintue the next time
-//                {
-//                    InlineBox rbox = copyBox();
-//                    rbox.splitted = true;
-//                    rbox.splitid = splitid + 1;
-//                    rbox.setStartChild(lastbreak); //next time start from the last break
-//                    rbox.adoptChildren();
-//                    setEndChild(lastbreak); //this box stops here
-//                    rest = rbox;
-//                    break;
-//                }
-//            }
-//
-//            if (subbox.canSplitAfter())
-//            	lastbreak = i+1;
-//        }
-//
-//        //compute the vertical positions of the boxes
-//        //updateLineMetrics();
-//        content.width = x;
-//        content.height = ctx.getFontHeight();
-//        halflead = (content.height - ctx.getFontHeight()) / 2;
-//        alignBoxes();
-//        setSize(totalWidth(), totalHeight());
-//
-//        return ret;
-//    }
-    
+{
+    return false;
+}
+
     @Override
     public void absolutePositions()
     {
