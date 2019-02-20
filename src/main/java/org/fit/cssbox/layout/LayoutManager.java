@@ -1,6 +1,6 @@
 package org.fit.cssbox.layout;
 
-public abstract class LayoutManager {
+public interface LayoutManager {
 
-    public abstract boolean doLayout(int availw, boolean force, boolean linestart);
+    boolean doLayout(int availw, boolean force, boolean linestart);
 }
