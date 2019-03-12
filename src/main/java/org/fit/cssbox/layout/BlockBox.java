@@ -147,7 +147,7 @@ public class BlockBox extends ElementBox
     
     /** Floating property */
     protected CSSProperty.Float floating;
-
+    
     /** Clearing property */
     protected CSSProperty.Clear clearing;
     
@@ -215,9 +215,9 @@ public class BlockBox extends ElementBox
         leftstatic = false;
         widthAdjust = 0;
 
-        typeofLayout = new BlockBoxLayoutManager(this);
+        typeoflayout = new BlockBoxLayoutManager(this);
 
-      	if (style != null)
+        if (style != null)
       		loadBlockStyle();
     }
 
@@ -261,8 +261,8 @@ public class BlockBox extends ElementBox
         startChild = src.startChild;
         endChild = src.endChild;
 
-        typeofLayout = new BlockBoxLayoutManager(this);
-        
+        typeoflayout = new BlockBoxLayoutManager(this);
+
         setStyle(src.getStyle());
     }
     
@@ -284,8 +284,7 @@ public class BlockBox extends ElementBox
         leftstatic = src.leftstatic;
         domParent = src.domParent;
 
-        typeofLayout = src.typeofLayout;
-
+        typeoflayout = src.typeoflayout;
         if (src.declMargin != null)
         	declMargin = new LengthSet(src.declMargin);
         clipRegion = src.clipRegion;
@@ -407,11 +406,6 @@ public class BlockBox extends ElementBox
     {
         return floatY;
     }
-
-
-
-
-
     
     /** Returns true if the box is in the normal text flow (not absolutely
      * positioned nor floating) */
@@ -799,58 +793,6 @@ public class BlockBox extends ElementBox
         }
         
     }
-    
-//    /** Layout the sub-elements.
-//     * @param availw Maximal width available to the child elements
-//     * @param force Use the area even if the used width is greater than maxwidth
-//     * @param linestart Indicates whether the element is placed at the line start
-//     * @return <code>true</code> if the box has been succesfully placed
-//     */
-//    @Override
-//    public boolean doLayout(int availw, boolean force, boolean linestart)
-//    {
-//    	//if (getElement() != null && getElement().getAttribute("id").equals("gbzc"))
-//    	//	System.out.println("jo!");
-//        //Skip if not displayed
-//        if (!displayed)
-//        {
-//            content.setSize(0, 0);
-//            bounds.setSize(0, 0);
-//            return true;
-//        }
-//
-//        //remove previously splitted children from possible previous layout
-//        clearSplitted();
-//
-//        //shrink-to-fit when the width is not given by containing box or specified explicitly
-//        if (!hasFixedWidth())
-//        {
-//            //int min = getMinimalContentWidthLimit();
-//            int min = Math.max(getMinimalContentWidthLimit(), getMinimalContentWidth());
-//            int max = getMaximalContentWidth();
-//            int availcont = availw - emargin.left - border.left - padding.left - emargin.right - border.right - padding.right;
-//            //int pref = Math.min(max, availcont);
-//            //if (pref < min) pref = min;
-//            int pref = Math.min(Math.max(min, availcont), max);
-//            setContentWidth(pref);
-//            updateChildSizes();
-//        }
-//
-//        //the width should be fixed from this point
-//        widthComputed = true;
-//
-//        /* Always try to use the full width. If the box is not in flow, its width
-//         * is updated after the layout */
-//        setAvailableWidth(totalWidth());
-//
-//        if (!contblock)  //block elements containing inline elements only
-//            layoutInline();
-//        else //block elements containing block elements
-//            layoutBlocks();
-//
-//        //allways fits as well possible
-//        return true;
-//    }
 
     /**
      * Lay out inline boxes inside of this block
@@ -2167,7 +2109,6 @@ public class BlockBox extends ElementBox
      *  http://www.w3.org/TR/CSS21/visudet.html#Computing_widths_and_margins .
      * @param width the specified width or null for auto
      * @param exact true if this is the exact width, false when it's a max/min width
-    // * @param cblock containing block
      * @param update <code>true</code>, if we're just updating the size to a new containing block size
      */
     protected void computeWidths(TermLengthOrPercent width, boolean auto, boolean exact, boolean update)
@@ -2521,7 +2462,7 @@ public class BlockBox extends ElementBox
     
     /**
      * Computes the collapsed margin height from two adjoining margin heights.
-    // * @see http://www.w3.org/TR/CSS22/box.html#collapsing-margins
+     * @see http://www.w3.org/TR/CSS22/box.html#collapsing-margins
      * @param m1 The first margin height
      * @param m2 The second margin height
      * @return The collapsed margin height

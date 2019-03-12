@@ -43,7 +43,7 @@ public class InlineBox extends ElementBox implements InlineElement
     
     /** parent LineBox assigned during layout */
     private LineBox linebox;
-    
+
     /** line box describing the children layout */
     private LineBox curline;
     
@@ -72,15 +72,13 @@ public class InlineBox extends ElementBox implements InlineElement
         lineBreakStop = false;
         collapsedCompletely = false;
 
-        typeofLayout = new InlineBoxLayoutManager(this);
+        typeoflayout = new InlineBoxLayoutManager(this);
     }
     
     public void copyValues(InlineBox src)
     {
         super.copyValues(src);
         valign = src.valign;
-
-        typeofLayout = src.typeofLayout;
     }
     
     @Override
@@ -258,22 +256,9 @@ public class InlineBox extends ElementBox implements InlineElement
         return minDescendantY;
     }
 
-    /****************************************************************************************************************************************/
-
     public LineBox getCurline() {
         return curline;
     }
-
-    public static Logger getLog() {
-        return log;
-    }
-
-    public boolean isLineBreakStop() {
-        return lineBreakStop;
-    }
-
-
-
 
     public void setCurline(LineBox curline) {
         this.curline = curline;
@@ -283,14 +268,29 @@ public class InlineBox extends ElementBox implements InlineElement
         this.collapsedCompletely = collapsedCompletely;
     }
 
+    public boolean isLineBreakStop() {
+        return lineBreakStop;
+    }
+
     public void setLineBreakStop(boolean lineBreakStop) {
         this.lineBreakStop = lineBreakStop;
+    }
+
+    public static Logger getLog() {
+        return log;
+    }
+
+    public static void setLog(Logger log) {
+        InlineBox.log = log;
+    }
+
+    public int getHalflead() {
+        return halflead;
     }
 
     public void setHalflead(int halflead) {
         this.halflead = halflead;
     }
-    /***************************************************************************************************************************************/
     //========================================================================
     
     @Override
@@ -307,10 +307,11 @@ public class InlineBox extends ElementBox implements InlineElement
 	
     @Override
     public boolean mayContainBlocks()
-{
-    return false;
-}
+    {
+    	return false;
+    }
 
+    
     @Override
     public void absolutePositions()
     {

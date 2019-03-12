@@ -69,6 +69,8 @@ abstract public class ElementBox extends Box
     public static final CSSProperty.Display DISPLAY_TABLE_COLUMN = CSSProperty.Display.TABLE_COLUMN;
     public static final CSSProperty.Display DISPLAY_TABLE_CELL = CSSProperty.Display.TABLE_CELL;
     public static final CSSProperty.Display DISPLAY_TABLE_CAPTION = CSSProperty.Display.TABLE_CAPTION;
+    public static final CSSProperty.Display DISPLAY_GRID = CSSProperty.Display.GRID;
+    public static final CSSProperty.Display DISPLAY_INLINE_GRID = CSSProperty.Display.INLINE_GRID;
     
     public static final CSSProperty.Transform TRANSFORM_NONE = CSSProperty.Transform.NONE;
     
@@ -82,9 +84,6 @@ abstract public class ElementBox extends Box
     public static final CSSProperty.WhiteSpace WHITESPACE_NOWRAP = CSSProperty.WhiteSpace.NOWRAP;
     public static final CSSProperty.WhiteSpace WHITESPACE_PRE_WRAP = CSSProperty.WhiteSpace.PRE_WRAP;
     public static final CSSProperty.WhiteSpace WHITESPACE_PRE_LINE = CSSProperty.WhiteSpace.PRE_LINE;
-
-    public static final CSSProperty.Display DISPLAY_GRID = CSSProperty.Display.GRID;
-    public static final CSSProperty.Display DISPLAY_INLINE_GRD = CSSProperty.Display.INLINE_GRID;
     
     /** Default line height if nothing or 'normal' is specified */
     private static final float DEFAULT_LINE_HEIGHT = 1.12f;
@@ -128,7 +127,7 @@ abstract public class ElementBox extends Box
     /** The map of related pseudo-elements (if any) */
     protected Map<Selector.PseudoElementType, ElementBox> pseudoElements;
 
-    protected LayoutManager typeofLayout;
+    protected LayoutManager typeoflayout;
     
     //============================== Computed style ======================
     
@@ -1306,7 +1305,7 @@ abstract public class ElementBox extends Box
         
         display = style.getProperty("display");
         if (display == null) display = CSSProperty.Display.INLINE;
-        
+
         CSSProperty.Float floating = style.getProperty("float");
         if (floating == null) floating = BlockBox.FLOAT_NONE;
         
@@ -1506,10 +1505,19 @@ abstract public class ElementBox extends Box
     }
 
 
+    /**
+     * Layout the sub-elements.
+     *
+     * @param availw    Maximal width available to the child elements
+     * @param force     Use the area even if the used width is greater than maxwidth
+     * @param linestart Indicates whether the element is placed at the line start
+     * @return <code>true</code> if the box has been succesfully placed
+     */
     @Override
-    public boolean doLayout(int avail, boolean force, boolean linestart) {
-        LayoutManager lm = typeofLayout;
-        lm.doLayout(avail, force, linestart);
+    public boolean doLayout(int availw, boolean force, boolean linestart) {
+        LayoutManager manager = typeoflayout;
+        manager.doLayout(availw, force, linestart);
         return true;
     }
+    
 }
