@@ -1,6 +1,6 @@
 package org.fit.cssbox.layout;
 
-public class InlineBoxLayoutManager extends LayoutManager {
+public class InlineBoxLayoutManager implements ILayoutManager {
     private InlineBox box;
 
     public InlineBoxLayoutManager(InlineBox box) {

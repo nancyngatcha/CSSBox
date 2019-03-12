@@ -1,8 +1,18 @@
 package org.fit.cssbox.layout;
 
-public class FlexBoxLayoutManager extends LayoutManager {
+public class FlexBoxLayoutManager implements ILayoutManager {
+
+    private BlockBox owner;
+
+    public FlexBoxLayoutManager(BlockBox owner) {
+        this.owner = owner;
+    }
+
+
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart) {
-        return false;
+        System.out.println("It's in! ");
+
+        return true;
     }
 }

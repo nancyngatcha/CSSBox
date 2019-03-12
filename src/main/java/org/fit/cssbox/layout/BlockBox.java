@@ -793,58 +793,6 @@ public class BlockBox extends ElementBox
         }
         
     }
-    
-    /** Layout the sub-elements.
-     * @param availw Maximal width available to the child elements
-     * @param force Use the area even if the used width is greater than maxwidth
-     * @param linestart Indicates whether the element is placed at the line start
-     * @return <code>true</code> if the box has been succesfully placed
-     */
-    @Override
-    public boolean doLayout(int availw, boolean force, boolean linestart)
-    {
-    	//if (getElement() != null && getElement().getAttribute("id").equals("gbzc"))
-    	//	System.out.println("jo!");
-        //Skip if not displayed
-        if (!displayed)
-        {
-            content.setSize(0, 0);
-            bounds.setSize(0, 0);
-            return true;
-        }
-
-        //remove previously splitted children from possible previous layout
-        clearSplitted();
-
-        //shrink-to-fit when the width is not given by containing box or specified explicitly
-        if (!hasFixedWidth())
-        {
-            //int min = getMinimalContentWidthLimit();
-            int min = Math.max(getMinimalContentWidthLimit(), getMinimalContentWidth());
-            int max = getMaximalContentWidth();
-            int availcont = availw - emargin.left - border.left - padding.left - emargin.right - border.right - padding.right;
-            //int pref = Math.min(max, availcont);
-            //if (pref < min) pref = min;
-            int pref = Math.min(Math.max(min, availcont), max);
-            setContentWidth(pref);
-            updateChildSizes();
-        }
-        
-        //the width should be fixed from this point
-        widthComputed = true;
-        
-        /* Always try to use the full width. If the box is not in flow, its width
-         * is updated after the layout */
-        setAvailableWidth(totalWidth());
-        
-        if (!contblock)  //block elements containing inline elements only
-            layoutInline();
-        else //block elements containing block elements
-            layoutBlocks();
-        
-        //allways fits as well possible
-        return true;
-    }
 
     /**
      * Lay out inline boxes inside of this block
