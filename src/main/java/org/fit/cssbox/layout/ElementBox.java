@@ -1515,8 +1515,8 @@ abstract public class ElementBox extends Box
      */
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart) {
-        LayoutManager manager = typeoflayout;
-        manager.doLayout(availw, force, linestart);
+        LayoutManager lm = typeoflayout;
+        lm.doLayout(availw, force, linestart);
         return true;
     }
     
