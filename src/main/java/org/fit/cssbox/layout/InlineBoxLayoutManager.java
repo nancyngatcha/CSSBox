@@ -72,7 +72,7 @@ public class InlineBoxLayoutManager implements ILayoutManager {
                         rbox.setStartChild(i + 1); //next starts with the next one
                         rbox.adoptChildren();
                         box.setEndChild(i+1); //...and this box stops with this element
-                        box = rbox;
+                        box.rest = rbox;
                     }
                     break;
                 }
