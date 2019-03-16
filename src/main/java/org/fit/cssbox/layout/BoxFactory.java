@@ -789,7 +789,10 @@ public class BoxFactory
         if (block)
         {
             Element anelem = createAnonymousElement(child.getNode().getOwnerDocument(), "Xdiv", "block");
-            anbox = new BlockBox(anelem, (Graphics2D) child.getGraphics().create(), child.getVisualContext().create());
+            if (parent.display == ElementBox.DISPLAY_GRID)
+                anbox = new GridItem(anelem, (Graphics2D) child.getGraphics().create(), child.getVisualContext().create());
+            else
+                anbox = new BlockBox(anelem, (Graphics2D) child.getGraphics().create(), child.getVisualContext().create());
             anbox.setViewport(viewport);
             anbox.setStyle(createAnonymousStyle("block"));
             ((BlockBox) anbox).contblock = false;
@@ -914,7 +917,11 @@ public class BoxFactory
         ElementBox root = new InlineBox(n, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
         root.setViewport(viewport);
         root.setStyle(style);
-        if (root.getDisplay() == ElementBox.DISPLAY_LIST_ITEM)
+
+        if(parent.getDisplay() == ElementBox.DISPLAY_GRID)
+            root = new GridItem((InlineBox) root);
+
+        else if (root.getDisplay() == ElementBox.DISPLAY_LIST_ITEM)
             root = new ListItemBox((InlineBox) root);
         else if (root.getDisplay() == ElementBox.DISPLAY_TABLE)
             root = new BlockTableBox((InlineBox) root);
@@ -936,6 +943,8 @@ public class BoxFactory
             root = new TableColumnGroup((InlineBox) root);
         else if (root.getDisplay() == ElementBox.DISPLAY_INLINE_BLOCK)
             root = new InlineBlockBox((InlineBox) root);
+        else if (root.getDisplay() == ElementBox.DISPLAY_GRID) /***************************************************/
+            root = new GridWrapperBlockBox((InlineBox) root);
         else if (root.isBlock())
             root = new BlockBox((InlineBox) root);
         return root;
