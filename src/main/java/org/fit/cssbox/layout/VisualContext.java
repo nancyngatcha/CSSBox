@@ -522,6 +522,8 @@ public class VisualContext
                     return Math.min(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval / 100.0;
                 case vmax:
                     return Math.max(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval / 100.0;
+                case none:
+                    return nval;
                 default:
                     return 0;
             }
