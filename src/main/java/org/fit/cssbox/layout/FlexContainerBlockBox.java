@@ -8,6 +8,35 @@ import java.awt.*;
 
 public class FlexContainerBlockBox extends BlockBox {
 
+    public static final CSSProperty.FlexDirection FLEX_DIRECTION_ROW = CSSProperty.FlexDirection.ROW;
+    public static final CSSProperty.FlexDirection FLEX_DIRECTION_ROW_REVERSE = CSSProperty.FlexDirection.ROW_REVERSE;
+    public static final CSSProperty.FlexDirection FLEX_DIRECTION_COLUMN = CSSProperty.FlexDirection.COLUMN;
+    public static final CSSProperty.FlexDirection FLEX_DIRECTION_COLUMN_REVERSE = CSSProperty.FlexDirection.COLUMN_REVERSE;
+
+    public static final CSSProperty.FlexWrap FLEX_WRAP_NOWRAP = CSSProperty.FlexWrap.NOWRAP;
+    public static final CSSProperty.FlexWrap FLEX_WRAP_WRAP = CSSProperty.FlexWrap.WRAP;
+    public static final CSSProperty.FlexWrap FLEX_WRAP_REVERSE = CSSProperty.FlexWrap.WRAP_REVERSE;
+
+    public static final CSSProperty.JustifyContent JUSTIFY_CONTENT_FLEX_START = CSSProperty.JustifyContent.FlexStart;
+    public static final CSSProperty.JustifyContent JUSTIFY_CONTENT_FLEX_END = CSSProperty.JustifyContent.FlexEnd;
+    public static final CSSProperty.JustifyContent JUSTIFY_CONTENT_CENTER = CSSProperty.JustifyContent.Center;
+    public static final CSSProperty.JustifyContent JUSTIFY_CONTENT_SPACE_BETWEEN = CSSProperty.JustifyContent.SpaceBetween;
+    public static final CSSProperty.JustifyContent JUSTIFY_CONTENT_SPACE_AROUND = CSSProperty.JustifyContent.SpaceAround;
+
+    public static final CSSProperty.AlignContent ALIGN_CONTENT_FLEX_START = CSSProperty.AlignContent.FlexStart;
+    public static final CSSProperty.AlignContent ALIGN_CONTENT_FLEX_END = CSSProperty.AlignContent.FlexEnd;
+    public static final CSSProperty.AlignContent ALIGN_CONTENT_CENTER = CSSProperty.AlignContent.Center;
+    public static final CSSProperty.AlignContent ALIGN_CONTENT_SPACE_BETWEEN = CSSProperty.AlignContent.SpaceBetween;
+    public static final CSSProperty.AlignContent ALIGN_CONTENT_SPACE_AROUND = CSSProperty.AlignContent.SpaceAround;
+    public static final CSSProperty.AlignContent ALIGN_CONTENT_STRETCH = CSSProperty.AlignContent.Stretch;
+
+    public static final CSSProperty.AlignItems ALIGN_ITEMS_FLEX_START = CSSProperty.AlignItems.FlexStart;
+    public static final CSSProperty.AlignItems ALIGN_ITEMS_FLEX_END = CSSProperty.AlignItems.FlexEnd;
+    public static final CSSProperty.AlignItems ALIGN_ITEMS_CENTER = CSSProperty.AlignItems.Center;
+    public static final CSSProperty.AlignItems ALIGN_ITEMS_SPACE_BASELINE = CSSProperty.AlignItems.Baseline;
+    public static final CSSProperty.AlignItems ALIGN_ITEMS_STRETCH = CSSProperty.AlignItems.Stretch;
+
+
     protected CSSProperty.FlexDirection flexDirection;
     protected CSSProperty.FlexWrap flexWrap;
     protected CSSProperty.JustifyContent justifyContent;
@@ -16,6 +45,7 @@ public class FlexContainerBlockBox extends BlockBox {
 
     protected boolean isDirectionRow;
     protected boolean isDirectionReversed;
+
     protected int mainSpace;
     protected int crossSpace;
 
@@ -30,6 +60,32 @@ public class FlexContainerBlockBox extends BlockBox {
         super(src);
         typeoflayout = new FlexBoxLayoutManager(this);
         isblock = true;
+
+    }
+
+    public int getMainSpace() {
+        return mainSpace;
+    }
+
+    public void setMainSpace() {
+        if(isDirectionRow) {
+            mainSpace = getContent().width;
+        } else {
+            mainSpace = getContent().height;
+        }
+    }
+
+    public int getCrossSpace() {
+        return crossSpace;
+    }
+
+    public void setCrossSpace() {
+        if(isDirectionRow) {
+            crossSpace = getContent().height;
+        } else {
+            crossSpace = getContent().width;
+        }
+
     }
 
     @Override
@@ -37,7 +93,6 @@ public class FlexContainerBlockBox extends BlockBox {
     {
         super.setStyle(s);
         loadFlexContainerStyles();
-
     }
 
     public void loadFlexContainerStyles(){

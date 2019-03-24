@@ -1,30 +1,58 @@
 package org.fit.cssbox.layout;
 
-import cz.vutbr.web.css.CSSProperty;
-import cz.vutbr.web.css.NodeData;
+import cz.vutbr.web.css.*;
 import org.w3c.dom.Element;
 
 import java.awt.*;
 
 public class FlexItemBlockBox extends BlockBox {
 
-    /** flex basis specified by the style */
+    public static final CSSProperty.AlignSelf ALIGN_SELF_AUTO = CSSProperty.AlignSelf.Auto;
+    public static final CSSProperty.AlignSelf ALIGN_SELF_FLEX_START = CSSProperty.AlignSelf.FlexStart;
+    public static final CSSProperty.AlignSelf ALIGN_SELF_FLEX_END = CSSProperty.AlignSelf.FlexEnd;
+    public static final CSSProperty.AlignSelf ALIGN_SELF_CENTER = CSSProperty.AlignSelf.Center;
+    public static final CSSProperty.AlignSelf ALIGN_SELF_BASELINE = CSSProperty.AlignSelf.Baseline;
+    public static final CSSProperty.AlignSelf ALIGN_SELF_STRETCH = CSSProperty.AlignSelf.Stretch;
 
-    protected CSSProperty.AlignSelf alignSelf;
-    protected CSSProperty.FlexBasis flexBasis;
-    protected CSSProperty.FlexGrow flexGrow;
-    protected CSSProperty.FlexShrink flexShrink;
-    protected CSSProperty.Order order;
+    public static final CSSProperty.FlexBasis FLEX_BASIS_CONTENT = CSSProperty.FlexBasis.CONTENT;
+    public static final CSSProperty.FlexBasis FLEX_BASIS_LENGTH = CSSProperty.FlexBasis.length;
+    public static final CSSProperty.FlexBasis FLEX_BASIS_PERCENTAGE = CSSProperty.FlexBasis.percentage;
+    public static final CSSProperty.FlexBasis FLEX_BASIS_AUTO = CSSProperty.FlexBasis.AUTO;
+
+    public static final CSSProperty.FlexGrow FLEX_GROW_NUMBER = CSSProperty.FlexGrow.number;
+
+    public static final CSSProperty.FlexShrink FLEX_SHRINK_NUMBER = CSSProperty.FlexShrink.number;
+
+    public static final CSSProperty.Order ORDER_INTEGER = CSSProperty.Order.integer;
+
+
+    /** flex basis specified by the style */
+                                                //INITIALS
+    protected CSSProperty.AlignSelf alignSelf; //auto
+    protected CSSProperty.FlexBasis flexBasis; // auto
+    protected CSSProperty.FlexGrow flexGrow; // 0
+    protected CSSProperty.FlexShrink flexShrink; // 1
+    protected CSSProperty.Order flexOrder; //0
+
+    protected float flexGrowValue;
+    protected float flexShrinkValue;
+    protected int flexBasisValue;
+    protected int flexOrderValue;
+
+    protected int hypoteticalMainSize;  // to jest final flex-basis  (flex-basis ukotvená MIN a MAX width)
 
     public FlexItemBlockBox(Element n, Graphics2D g, VisualContext ctx) {
         super(n, g, ctx);
         isblock = true;
+        //todo ZAKAZAT FLOATING
+        flexBasisValue = 0;
 
     }
 
     public FlexItemBlockBox(InlineBox src) {
         super(src);
         isblock = true;
+        flexBasisValue = 0;
     }
 
     @Override
@@ -44,17 +72,102 @@ public class FlexItemBlockBox extends BlockBox {
         if (flexBasis == null) flexBasis = CSSProperty.FlexBasis.AUTO;
 
         flexGrow = style.getProperty("flex-grow");
-        if (flexGrow == null) flexGrow = CSSProperty.FlexGrow.number;
+        if (flexGrow == null) flexGrow = CSSProperty.FlexGrow.INITIAL;
 
         flexShrink = style.getProperty("flex-shrink");
-        if (flexShrink == null) flexShrink = CSSProperty.FlexShrink.number;
+        if (flexShrink == null) flexShrink = CSSProperty.FlexShrink.INITIAL;
 
-        order = style.getProperty("order");
-        if (order == null) order = CSSProperty.Order.integer;
+        flexOrder = style.getProperty("order");
+        if (flexOrder == null) flexOrder = CSSProperty.Order.INITIAL;
 
 
-        CSSDecoder dec = new CSSDecoder(ctx);
+        setFactorValues();
+        setFlexOrder();
+
+
 
     }
 
+    //ZDE SE RESI NUMBER
+    private void setFactorValues() {
+        Term<?> len = style.getValue("flex-grow", false);
+        flexGrowValue = setFactor(len, true);
+        len = style.getValue("flex-shrink", false);
+        flexShrinkValue = setFactor(len, false);
+
+    }
+
+    private float setFactor(Term<?> len, boolean isGrow){
+        float ret;
+        if(len != null) {
+            if (len instanceof TermInteger) ret = ((TermInteger) len).getValue();
+            else ret = ((TermNumber) len).getValue();
+        } else {
+            if(isGrow) ret = 0;
+            else ret = 1;
+        }
+        return ret;
+    }
+
+    private void setFlexOrder(){
+        Term<?> len = style.getValue("order", false);
+        if(len != null) {
+            flexOrderValue = ((TermInteger) len).getValue().intValue();
+        } else {
+            flexOrderValue = 0;
+        }
+
+    }
+
+    protected int boundFlexBasisByMinAndMaxWidth(int value) {
+        if (min_size.width != -1){
+            if (value < min_size.width)
+                value = min_size.width;
+        } else if(max_size.width != -1) {
+            if (value > max_size.width)
+                value = max_size.width;
+        }
+        return value;
+
+    }
+
+    protected void disableFloats(){
+        floatY = 0;
+        floatXl = 0;
+        floatXr = 0;
+    }
+
+    protected int setFlexBasisValue(CSSDecoder dec, int contw, FlexContainerBlockBox parentContainer){
+        if(flexBasis == CSSProperty.FlexBasis.valueOf("length") || flexBasis == CSSProperty.FlexBasis.valueOf("percentage")) {
+            //used flex-basis
+            System.out.println("LENGTH nebo PERCENTAGE");
+            flexBasisValue = dec.getLength(getLengthValue("flex-basis"), false, 0, 0, contw);
+
+        } else if (flexBasis == FlexItemBlockBox.FLEX_BASIS_CONTENT){
+            //TODO: pokrač. 3) content
+            System.out.println("CONTENT");
+            if(parentContainer.isDirectionRow())
+                flexBasisValue = content.width;
+            else
+                flexBasisValue = content.height;
+
+        } else if (flexBasis == FlexItemBlockBox.FLEX_BASIS_AUTO){
+            //TODO: pokrač. 3) auto
+            System.out.println("WIDTH or HEIGHT (kdyz neni zadano, tak content)");
+
+            if(parentContainer.isDirectionRow()) {
+                if (parentContainer.style.getProperty("width") == CSSProperty.Width.AUTO)
+                    flexBasisValue = content.width; //use content
+                else {
+                    flexBasisValue = dec.getLength(getLengthValue("width"), false, 0, 0, 0); //use width
+                }
+            } else {
+                if (parentContainer.style.getProperty("height") == CSSProperty.Width.AUTO)
+                    flexBasisValue = content.height; //use content
+                else
+                    flexBasisValue = getHeight(); //use height
+            }
+        }
+        return flexBasisValue;
+    }
 }
