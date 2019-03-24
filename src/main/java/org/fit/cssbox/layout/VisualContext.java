@@ -75,7 +75,6 @@ public class VisualContext
     private PxEvaluator pxEval; //expression evaluator for obtaining pixel values of expressions
     private PtEvaluator ptEval; //expression evaluator for obtaining points values of expressions
     private RadEvaluator radEval; //expression evaluator for obtaining radian values of expressions
-
     
     public VisualContext(VisualContext parent, BoxFactory factory)
     {
@@ -522,6 +521,8 @@ public class VisualContext
                     return Math.min(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval / 100.0;
                 case vmax:
                     return Math.max(viewport.getVisibleRect().getWidth(), viewport.getVisibleRect().getHeight()) * nval / 100.0;
+                case fr:
+                    return nval;
                 case none:
                     return nval;
                 default:
