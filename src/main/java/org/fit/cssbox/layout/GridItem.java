@@ -53,6 +53,7 @@ public class GridItem extends BlockBox {
             gridItemRowColumnValue.rowEnd = dec.getLength(getLengthValue("grid-row-end"), false, 0, 0, 0);
         }
 
+
         gridStartEnd = style.getProperty("grid-column-start");
         if (gridStartEnd == null) gridStartEnd = CSSProperty.GridStartEnd.AUTO;
         else if (gridStartEnd == CSSProperty.GridStartEnd.number){
