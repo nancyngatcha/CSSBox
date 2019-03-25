@@ -18,14 +18,27 @@ public class GridItem extends BlockBox {
     public CSSProperty.GridStartEnd gridStartEnd;
     GridItemRowColumn gridItemRowColumnValue;
 
+    int widthcolumnsforitems;
+    int widthrowsforitems;
+    int columndistancefromzero;
+    int rowdistancefromzero;
+
     public GridItem(Element n, Graphics2D g, VisualContext ctx) {
         super(n, g, ctx);
         isblock = true;
+        widthcolumnsforitems = 0;
+        widthrowsforitems = 0;
+        columndistancefromzero = 0;
+        rowdistancefromzero = 0;
     }
 
     public GridItem(InlineBox src) {
         super(src);
         isblock = true;
+        widthcolumnsforitems = 0;
+        widthrowsforitems = 0;
+        columndistancefromzero = 0;
+        rowdistancefromzero = 0;
     }
 
 
