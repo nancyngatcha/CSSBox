@@ -48,9 +48,13 @@ public class FlexBoxLayoutManager implements ILayoutManager {
             if(container.isDirectionRow()) {
                 Item.bounds.width = Item.hypoteticalMainSize + Item.margin.left + Item.margin.right + Item.border.left + Item.border.right;
                 Item.content.width = Item.hypoteticalMainSize;
+
+                Item.bounds.height = Item.totalHeight();
             } else {
                 Item.bounds.height = Item.hypoteticalMainSize + Item.margin.top + Item.margin.bottom + Item.border.top + Item.border.bottom;
                 Item.content.height = Item.hypoteticalMainSize;
+
+                Item.bounds.width = Item.totalWidth();
             }
 
             //jde to za sebou, ale stejně to budu muset narvat do řádků nebo sloupců
