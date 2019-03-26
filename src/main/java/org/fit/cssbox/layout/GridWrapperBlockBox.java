@@ -35,25 +35,28 @@ public class GridWrapperBlockBox extends BlockBox {
     protected TermList gridTemplateRowsValues;
     protected TermList gridTemplateColumnsValues;
     protected TermList gridTemplateAreasValues;
-
-    //zkusebni
-    protected int gapRow = 0;
-    protected int gapColumn = 0;
-
-
-    public int flexFactorSum = 0;
-    public int sumofpixels = 0;
+    protected TermLength.Unit unit;
+    protected int gapRow;
+    protected int gapColumn;
+    protected int flexFactorSum;
+    protected int sumofpixels;
 
     public GridWrapperBlockBox(Element n, Graphics2D g, VisualContext ctx) {
         super(n, g, ctx);
         typeoflayout = new GridLayoutManager(this);
         isblock = true;
+        flexFactorSum = 0;
+        gapColumn = 0;
+        gapRow = 0;
     }
 
     public GridWrapperBlockBox(InlineBox src) {
         super(src);
         typeoflayout = new GridLayoutManager(this);
         isblock = true;
+        sumofpixels = 0;
+        gapColumn = 0;
+        gapRow = 0;
     }
 
     @Override
@@ -139,7 +142,6 @@ public class GridWrapperBlockBox extends BlockBox {
 
     protected boolean findUnitsForFr(TermList tmp, CSSDecoder dec, int gap) {
         TermLengthOrPercent a;
-        TermLength.Unit unit = null;
         boolean containFr = false;
         int b;
         int j = 0;

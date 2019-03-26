@@ -1,8 +1,7 @@
 package org.fit.cssbox.layout;
 
 import cz.vutbr.web.css.TermLengthOrPercent;
-
-import java.awt.*;
+import cz.vutbr.web.css.TermNumeric;
 
 public class GridLayoutManager implements LayoutManager {
 
@@ -15,21 +14,11 @@ public class GridLayoutManager implements LayoutManager {
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart) {
         System.out.println("DoLayout -> GridLayoutManager");
-        int oneFrUnitColumn;
-        int oneFrUnitRow;
-
-        //fsdfsdf
+        int oneFrUnitColumn = 0;
+        int oneFrUnitRow = 0;
 
         CSSDecoder dec = new CSSDecoder(gridbox.ctx);
 
-
-//        for (int i = 0; i < gridbox.endChild; i++) {
-//            System.out.println("pocet deti: " + gridbox.getSubBox(i).toString());
-//        }
-//        System.out.println("vyska content " + gridbox.content.getHeight());
-//        System.out.println("sirka content " + gridbox.content.getWidth());
-
-//        int contw = gridbox.getContainingBlock().width;
         System.out.println("content width: " + gridbox.content.width);
         gridbox.GridGapProcessing(dec);
 
@@ -44,27 +33,57 @@ public class GridLayoutManager implements LayoutManager {
 
         if (gridbox.findUnitsForFr(gridbox.gridTemplateRowsValues, dec, gridbox.gapRow)) {
             oneFrUnitRow = gridbox.computingFrUnits(gridbox.flexFactorSum, gridbox.sumofpixels, gridbox.content.height);
-            gridbox.flexFactorSum = 0;
-            gridbox.sumofpixels = 0;
+            System.out.println("1fr pro row je: " + oneFrUnitRow + "px");
         }
 
         for (int i = 0; i < gridbox.getSubBoxNumber(); i++) {
             GridItem griditem = (GridItem) gridbox.getSubBox(i);
+            TermLengthOrPercent a;
+            int tmpForFrUnit;
 
-            for (int j = griditem.gridItemRowColumnValue.columnStart -1; j < griditem.gridItemRowColumnValue.columnEnd -1; j++) {
-                griditem.widthcolumnsforitems += dec.getLength((TermLengthOrPercent) gridbox.gridTemplateColumnsValues.get(j), false, 0, 0, 0);
+            //zjistuju sirku grid itemu
+            for (int j = griditem.gridItemRowColumnValue.columnStart - 1; j < griditem.gridItemRowColumnValue.columnEnd - 1; j++) {
+                a = (TermLengthOrPercent) gridbox.gridTemplateColumnsValues.get(j);
+                gridbox.unit = a.getUnit();
+                if (gridbox.unit != TermNumeric.Unit.fr) {
+                    griditem.widthcolumnsforitems += dec.getLength((TermLengthOrPercent) gridbox.gridTemplateColumnsValues.get(j), false, 0, 0, 0);
+                } else {
+                    tmpForFrUnit = dec.getLength((TermLengthOrPercent) gridbox.gridTemplateColumnsValues.get(j), false, 0, 0, 0);
+                    griditem.widthcolumnsforitems += (tmpForFrUnit * oneFrUnitColumn);
+                }
             }
-
-            for (int j = griditem.gridItemRowColumnValue.rowStart -1; j < griditem.gridItemRowColumnValue.rowEnd -1; j++) {
-                griditem.widthrowsforitems += dec.getLength((TermLengthOrPercent) gridbox.gridTemplateRowsValues.get(j), false, 0, 0, 0);
+            //zjistuju vysku grid itemu
+            for (int j = griditem.gridItemRowColumnValue.rowStart - 1; j < griditem.gridItemRowColumnValue.rowEnd - 1; j++) {
+                a = (TermLengthOrPercent) gridbox.gridTemplateRowsValues.get(j);
+                gridbox.unit = a.getUnit();
+                if (gridbox.unit != TermNumeric.Unit.fr) {
+                    griditem.widthrowsforitems += dec.getLength((TermLengthOrPercent) gridbox.gridTemplateRowsValues.get(j), false, 0, 0, 0);
+                } else {
+                    tmpForFrUnit = dec.getLength((TermLengthOrPercent) gridbox.gridTemplateRowsValues.get(j), false, 0, 0, 0);
+                    griditem.widthrowsforitems += (tmpForFrUnit * oneFrUnitRow);
+                }
             }
-
-            for (int j = 0; j < griditem.gridItemRowColumnValue.columnStart-1; j++) {
-                griditem.columndistancefromzero += dec.getLength((TermLengthOrPercent) gridbox.gridTemplateColumnsValues.get(j), false, 0, 0, 0);
+            //zjistuju vzdalenost od 0 v horizontalnim smeru
+            for (int j = 0; j < griditem.gridItemRowColumnValue.columnStart - 1; j++) {
+                a = (TermLengthOrPercent) gridbox.gridTemplateColumnsValues.get(j);
+                gridbox.unit = a.getUnit();
+                if (gridbox.unit != TermNumeric.Unit.fr) {
+                    griditem.columndistancefromzero += dec.getLength((TermLengthOrPercent) gridbox.gridTemplateColumnsValues.get(j), false, 0, 0, 0);
+                } else {
+                    tmpForFrUnit = dec.getLength((TermLengthOrPercent) gridbox.gridTemplateColumnsValues.get(j), false, 0, 0, 0);
+                    griditem.columndistancefromzero += (tmpForFrUnit * oneFrUnitColumn);
+                }
             }
-
+            //zjistuju vzdalenost od 0 ve vertikalnim smeru
             for (int j = 0; j < griditem.gridItemRowColumnValue.rowStart - 1; j++) {
-                griditem.rowdistancefromzero += dec.getLength((TermLengthOrPercent) gridbox.gridTemplateRowsValues.get(j), false, 0, 0, 0);
+                a = (TermLengthOrPercent) gridbox.gridTemplateRowsValues.get(j);
+                gridbox.unit = a.getUnit();
+                if (gridbox.unit != TermNumeric.Unit.fr) {
+                    griditem.rowdistancefromzero += dec.getLength((TermLengthOrPercent) gridbox.gridTemplateRowsValues.get(j), false, 0, 0, 0);
+                } else {
+                    tmpForFrUnit = dec.getLength((TermLengthOrPercent) gridbox.gridTemplateRowsValues.get(j), false, 0, 0, 0);
+                    griditem.rowdistancefromzero += (tmpForFrUnit * oneFrUnitRow);
+                }
             }
 
             System.out.println("distance column from zero: " + griditem.columndistancefromzero);
@@ -83,22 +102,7 @@ public class GridLayoutManager implements LayoutManager {
             griditem.bounds.y = griditem.rowdistancefromzero;
 
             griditem.setPosition(griditem.bounds.x, griditem.bounds.y);
-
-//            griditem.bounds = new Rectangle(10, 50, 20, 60);
         }
-
-
-//        for (int i = 0; i < gridbox.getSubBoxNumber(); i++) {
-//            GridItem subbox = (GridItem) gridbox.getSubBox(i);
-//            System.out.println("czzz: " + subbox.gridStartEnd);
-//            if (subbox.gridStartEnd  == CSSProperty.GridStartEnd.valueOf("number")) {
-//                subbox.gridStartEndValue = dec.getLength(subbox.getLengthValue("grid-column-start"), false, 0, 0, contw);
-//                System.out.println("Sloupec: " +subbox.gridStartEndValue);
-//               // System.out.println("JSEM V IF");
-//            } else
-//                System.out.println("fdsfdsfds");
-////            System.out.println(subbox.getSubBox(i).toString());
-//        }
         return true;
     }
 }
