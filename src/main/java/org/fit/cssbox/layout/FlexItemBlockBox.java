@@ -5,7 +5,7 @@ import org.w3c.dom.Element;
 
 import java.awt.*;
 
-public class FlexItemBlockBox extends BlockBox {
+public class FlexItemBlockBox extends BlockBox  implements Comparable  {
 
     public static final CSSProperty.AlignSelf ALIGN_SELF_AUTO = CSSProperty.AlignSelf.Auto;
     public static final CSSProperty.AlignSelf ALIGN_SELF_FLEX_START = CSSProperty.AlignSelf.FlexStart;
@@ -44,7 +44,6 @@ public class FlexItemBlockBox extends BlockBox {
     public FlexItemBlockBox(Element n, Graphics2D g, VisualContext ctx) {
         super(n, g, ctx);
         isblock = true;
-        //todo ZAKAZAT FLOATING
         flexBasisValue = 0;
 
     }
@@ -53,6 +52,11 @@ public class FlexItemBlockBox extends BlockBox {
         super(src);
         isblock = true;
         flexBasisValue = 0;
+    }
+
+
+    public int getFlexOrderValue() {
+        return flexOrderValue;
     }
 
     @Override
@@ -169,5 +173,13 @@ public class FlexItemBlockBox extends BlockBox {
             }
         }
         return flexBasisValue;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        if(!(o instanceof FlexItemBlockBox))
+            return 0;
+        int compareOrder = ((FlexItemBlockBox) o).getFlexOrderValue();
+        return this.flexOrderValue - compareOrder;
     }
 }
