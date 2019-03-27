@@ -16,7 +16,7 @@ public class FlexContainerBlockBox extends BlockBox {
 
     public static final CSSProperty.FlexWrap FLEX_WRAP_NOWRAP = CSSProperty.FlexWrap.NOWRAP;
     public static final CSSProperty.FlexWrap FLEX_WRAP_WRAP = CSSProperty.FlexWrap.WRAP;
-    public static final CSSProperty.FlexWrap FLEX_WRAP_REVERSE = CSSProperty.FlexWrap.WRAP_REVERSE;
+    public static final CSSProperty.FlexWrap FLEX_WRAP_WRAP_REVERSE = CSSProperty.FlexWrap.WRAP_REVERSE;
 
     public static final CSSProperty.JustifyContent JUSTIFY_CONTENT_FLEX_START = CSSProperty.JustifyContent.FlexStart;
     public static final CSSProperty.JustifyContent JUSTIFY_CONTENT_FLEX_END = CSSProperty.JustifyContent.FlexEnd;
@@ -126,9 +126,6 @@ public class FlexContainerBlockBox extends BlockBox {
     }
 
     protected void layoutItems(ArrayList<FlexItemBlockBox> list, FlexContainerBlockBox container) {
-        int contw = container.getContentWidth();
-        CSSDecoder dec = new CSSDecoder(container.ctx);
-
         ArrayList <FlexLine> lines = new ArrayList<>();
         FlexLine line = firstLine;
         if(line == null)
@@ -138,16 +135,18 @@ public class FlexContainerBlockBox extends BlockBox {
         for (int i = 0; i < list.size(); i++) {
             FlexItemBlockBox Item = list.get(i);
             System.out.println(Item);
-            Item.flexBasisValue = Item.setFlexBasisValue(dec, contw, container);
+            Item.flexBasisValue = Item.setFlexBasisValue(container);
             Item.hypoteticalMainSize = Item.boundFlexBasisByMinAndMaxWidth(Item.flexBasisValue);
 
+            Item.fixMargins(container);
+
             if (container.isDirectionRow()) {
-                Item.bounds.width = Item.hypoteticalMainSize - Item.content.width + Item.totalWidth();
+                Item.bounds.width = Item.hypoteticalMainSize + Item.padding.left + Item.padding.right + Item.border.left + Item.border.right + Item.margin.left + Item.margin.right;
                 Item.content.width = Item.hypoteticalMainSize;
 
                 Item.bounds.height = Item.totalHeight();
             } else {
-                Item.bounds.height = Item.hypoteticalMainSize - Item.content.height + Item.totalHeight();
+                Item.bounds.height = Item.hypoteticalMainSize  + Item.padding.top + Item.padding.bottom + Item.border.top + Item.border.bottom + Item.margin.top+ Item.margin.bottom;
                 Item.content.height = Item.hypoteticalMainSize;
 
                 Item.bounds.width = Item.totalWidth();

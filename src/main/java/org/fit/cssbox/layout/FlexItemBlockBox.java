@@ -45,7 +45,6 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable  {
         super(n, g, ctx);
         isblock = true;
         flexBasisValue = 0;
-
     }
 
     public FlexItemBlockBox(InlineBox src) {
@@ -124,13 +123,14 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable  {
     }
 
     protected int boundFlexBasisByMinAndMaxWidth(int value) {
-        if (min_size.width != -1){
+        if (min_size.width != -1)
             if (value < min_size.width)
                 value = min_size.width;
-        } else if(max_size.width != -1) {
+
+        if(max_size.width != -1)
             if (value > max_size.width)
                 value = max_size.width;
-        }
+
         return value;
 
     }
@@ -141,7 +141,10 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable  {
         floatXr = 0;
     }
 
-    protected int setFlexBasisValue(CSSDecoder dec, int contw, FlexContainerBlockBox parentContainer){
+    protected int setFlexBasisValue(FlexContainerBlockBox parentContainer){
+        CSSDecoder dec = new CSSDecoder(parentContainer.ctx);
+        int contw = parentContainer.getContentWidth();
+
         if(flexBasis == CSSProperty.FlexBasis.valueOf("length") || flexBasis == CSSProperty.FlexBasis.valueOf("percentage")) {
             //used flex-basis
             System.out.println("LENGTH nebo PERCENTAGE");
@@ -160,19 +163,47 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable  {
             System.out.println("WIDTH or HEIGHT (kdyz neni zadano, tak content)");
 
             if(parentContainer.isDirectionRow()) {
-                if (parentContainer.style.getProperty("width") == CSSProperty.Width.AUTO)
+                if (style.getProperty("width") == CSSProperty.Width.AUTO)
                     flexBasisValue = content.width; //use content
                 else {
                     flexBasisValue = dec.getLength(getLengthValue("width"), false, 0, 0, 0); //use width
                 }
             } else {
-                if (parentContainer.style.getProperty("height") == CSSProperty.Width.AUTO)
+                if (style.getProperty("height") == CSSProperty.Width.AUTO)
                     flexBasisValue = content.height; //use content
-                else
-                    flexBasisValue = getHeight(); //use height
+                else {
+                    flexBasisValue = dec.getLength(getLengthValue("height"), false, 0, 0, 0); //use height
+                }
             }
         }
         return flexBasisValue;
+    }
+
+
+    protected void fixMargins(FlexContainerBlockBox parent){
+        CSSDecoder decoder = new CSSDecoder(parent.ctx);
+
+        if(style.getProperty("margin-right") != CSSProperty.Margin.AUTO || style.getProperty("margin") != CSSProperty.Margin.AUTO) {
+            margin.right = decoder.getLength(getLengthValue("margin-right"), false, 0, 0, 0);
+            emargin.right = margin.right;
+        }
+
+        if(style.getProperty("margin-left") != CSSProperty.Margin.AUTO || style.getProperty("margin") != CSSProperty.Margin.AUTO) {
+            margin.left = decoder.getLength(getLengthValue("margin-left"), false, 0, 0, 0);
+            emargin.left = margin.left;
+        }
+
+        if(style.getProperty("margin-top") != CSSProperty.Margin.AUTO || style.getProperty("margin") != CSSProperty.Margin.AUTO) {
+            margin.top = decoder.getLength(getLengthValue("margin-top"), false, 0, 0, 0);
+            emargin.top = margin.top;
+        }
+
+        if(style.getProperty("margin-bottom") != CSSProperty.Margin.AUTO || style.getProperty("margin") != CSSProperty.Margin.AUTO) {
+            margin.bottom = decoder.getLength(getLengthValue("margin-bottom"), false, 0, 0, 0);
+            emargin.bottom = margin.bottom;
+        }
+
+
     }
 
     @Override

@@ -1,5 +1,7 @@
 package org.fit.cssbox.layout;
 
+import cz.vutbr.web.css.CSSProperty;
+
 import java.util.ArrayList;
 
 public class FlexLine {
@@ -91,7 +93,7 @@ public class FlexLine {
         for(int i = 0; i < itemsInLine.size(); i++)
             sumOfItemsWidths += itemsInLine.get(i).getWidth();
 
-        if(item.totalWidth() > remainingSpace)
+        if((item.totalWidth() > remainingSpace) && parent.flexWrap != CSSProperty.FlexWrap.NOWRAP)
             return false;
 
         //vejde se na radek

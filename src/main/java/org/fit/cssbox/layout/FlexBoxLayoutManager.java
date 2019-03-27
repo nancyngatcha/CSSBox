@@ -31,9 +31,6 @@ public class FlexBoxLayoutManager implements ILayoutManager {
         System.out.println("kontejner content (mainSpace, crossSpace) nastaven na: ("+ container.mainSpace + ", " + container.crossSpace + ")\n");
 
         //urceni flex-basis (zakladni velikosti flexu) polozkam
-        int contw = container.content.width;
-        CSSDecoder dec = new CSSDecoder(container.ctx);
-
         System.out.println("--------------\nCHILDS: \n");
 
 
