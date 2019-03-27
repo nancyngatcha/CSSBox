@@ -166,7 +166,7 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable  {
                 if (style.getProperty("width") == CSSProperty.Width.AUTO)
                     flexBasisValue = content.width; //use content
                 else {
-                    flexBasisValue = dec.getLength(getLengthValue("width"), false, 0, 0, 0); //use width
+                    flexBasisValue = dec.getLength(getLengthValue("width"), false, 0, 0, contw); //use width
                 }
             } else {
                 if (style.getProperty("height") == CSSProperty.Width.AUTO)
