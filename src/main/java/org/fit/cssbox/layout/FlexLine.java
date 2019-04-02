@@ -74,7 +74,7 @@ public class FlexLine {
         this.remainingSpace = remainingSpace;
     }
 
-    protected boolean registerItem(FlexItemBlockBox item) {
+    protected boolean registerItemAndSetItsPosition(FlexItemBlockBox item) {
         if (isFirstItem) {
             if (getHeight() < item.getHeight())
                 setHeight(item.getHeight());
@@ -96,6 +96,7 @@ public class FlexLine {
         if((item.totalWidth() > remainingSpace) && parent.flexWrap != CSSProperty.FlexWrap.NOWRAP)
             return false;
 
+        if(!((FlexContainerBlockBox)(item.parent)).isDirectionRow()) return false;
         //vejde se na radek
 
         //je treba zmenit vysku radku?

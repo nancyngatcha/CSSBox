@@ -29,18 +29,24 @@ public class BlockBoxLayoutManager implements ILayoutManager {
             LengthSet padding = owner.getPadding();
             LengthSet border = owner.getBorder();
             int availcont = availw - emargin.left - border.left - padding.left - emargin.right - border.right - padding.right;
-
             int pref = Math.min(Math.max(min, availcont), max);
             owner.setContentWidth(pref);
             owner.updateChildSizes();
         }
 
         //the width should be fixed from this point
-        owner.widthComputed = true;
 
         /* Always try to use the full width. If the owner is not in flow, its width
          * is updated after the layout */
-        owner.setAvailableWidth(owner.totalWidth());
+        if(owner.parent instanceof FlexItemBlockBox){
+            FlexItemBlockBox item = (FlexItemBlockBox) owner.parent;
+            owner.setAvailableWidth(item.hypoteticalMainSize);
+            owner.bounds.width = item.hypoteticalMainSize  + item.padding.left + item.padding.right + item.border.left + item.border.right + item.margin.left + item.margin.right;
+            owner.content.width = item.hypoteticalMainSize;
+        } else {
+            owner.widthComputed = true;
+            owner.setAvailableWidth(owner.totalWidth());
+        }
 
         if (!owner.contblock)  //block elements containing inline elements only
             owner.layoutInline();

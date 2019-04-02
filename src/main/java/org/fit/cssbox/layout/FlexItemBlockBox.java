@@ -39,18 +39,22 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable  {
     protected int flexBasisValue;
     protected int flexOrderValue;
 
+    protected boolean flexBasisSetByCont;
+
     protected int hypoteticalMainSize;  // to jest final flex-basis  (flex-basis ukotvená MIN a MAX width)
 
     public FlexItemBlockBox(Element n, Graphics2D g, VisualContext ctx) {
         super(n, g, ctx);
         isblock = true;
         flexBasisValue = 0;
+        flexBasisSetByCont = false;
     }
 
     public FlexItemBlockBox(InlineBox src) {
         super(src);
         isblock = true;
         flexBasisValue = 0;
+        flexBasisSetByCont = false;
     }
 
 
@@ -122,19 +126,6 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable  {
 
     }
 
-    protected int boundFlexBasisByMinAndMaxWidth(int value) {
-        if (min_size.width != -1)
-            if (value < min_size.width)
-                value = min_size.width;
-
-        if(max_size.width != -1)
-            if (value > max_size.width)
-                value = max_size.width;
-
-        return value;
-
-    }
-
     protected void disableFloats(){
         floatY = 0;
         floatXl = 0;
@@ -147,36 +138,70 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable  {
 
         if(flexBasis == CSSProperty.FlexBasis.valueOf("length") || flexBasis == CSSProperty.FlexBasis.valueOf("percentage")) {
             //used flex-basis
-            System.out.println("LENGTH nebo PERCENTAGE");
-            flexBasisValue = dec.getLength(getLengthValue("flex-basis"), false, 0, 0, contw);
-
-        } else if (flexBasis == FlexItemBlockBox.FLEX_BASIS_CONTENT){
-            //TODO: pokrač. 3) content
-            System.out.println("CONTENT");
-            if(parentContainer.isDirectionRow())
-                flexBasisValue = content.width;
-            else
-                flexBasisValue = content.height;
-
-        } else if (flexBasis == FlexItemBlockBox.FLEX_BASIS_AUTO){
-            //TODO: pokrač. 3) auto
-            System.out.println("WIDTH or HEIGHT (kdyz neni zadano, tak content)");
-
+            if(flexBasis == CSSProperty.FlexBasis.valueOf("percentage") && !parentContainer.isDirectionRow) {
+                flexBasisSetByCont = true;
+            } else {
+                flexBasisValue = dec.getLength(getLengthValue("flex-basis"), false, 0, 0, contw);
+            }
+        }
+        else if (flexBasis == FlexItemBlockBox.FLEX_BASIS_CONTENT){
+            //TODO content
+            flexBasisSetByCont = true;
+        }
+        else if (flexBasis == FlexItemBlockBox.FLEX_BASIS_AUTO){
+            //TODO: auto -> width/height
             if(parentContainer.isDirectionRow()) {
-                if (style.getProperty("width") == CSSProperty.Width.AUTO)
-                    flexBasisValue = content.width; //use content
+                if (style.getProperty("width") == CSSProperty.Width.AUTO || style.getProperty("width") == null) {
+                    flexBasisSetByCont = true;
+                }
                 else {
                     flexBasisValue = dec.getLength(getLengthValue("width"), false, 0, 0, contw); //use width
                 }
             } else {
-                if (style.getProperty("height") == CSSProperty.Width.AUTO)
-                    flexBasisValue = content.height; //use content
-                else {
+                if (style.getProperty("height") == CSSProperty.Height.AUTO  || style.getProperty("height") == null || style.getProperty("height") == CSSProperty.Height.valueOf("percentage")) {
+//                    if(style.getProperty("min-height") == null)
+//
+                    flexBasisSetByCont = true;
+                } else {
                     flexBasisValue = dec.getLength(getLengthValue("height"), false, 0, 0, 0); //use height
                 }
             }
         }
+
+        if(flexBasisSetByCont)
+                setFlexBasisBasedByContent();
+
         return flexBasisValue;
+    }
+
+    protected int boundFlexBasisByMinAndMaxValues(int value) {
+        if(((FlexContainerBlockBox) parent).isDirectionRow()) {
+            if (min_size.width != -1)
+                if (value < min_size.width)
+                    value = min_size.width;
+
+            if (max_size.width != -1)
+                if (value > max_size.width)
+                    value = max_size.width;
+
+        } else {
+            if (min_size.height != -1)
+                if (value < min_size.height)
+                    value = min_size.height;
+
+            if (max_size.height != -1)
+                if (value > max_size.height)
+                    value = max_size.height;
+        }
+        return value;
+
+    }
+
+    private void setFlexBasisBasedByContent(){
+//        if(contblock)
+//            flexBasisValue = getMinimalContentWidth();
+//        else
+            flexBasisValue = getMaximalContentWidth();
     }
 
 

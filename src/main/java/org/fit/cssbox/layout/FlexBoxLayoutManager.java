@@ -24,11 +24,10 @@ public class FlexBoxLayoutManager implements ILayoutManager {
             return true;
         }
 
-        System.out.println("je row: " + container.isDirectionRow);
-        System.out.println("je reversed: " + container.isDirectionReversed);
         container.setMainSpace(); //content width nebo height
         container.setCrossSpace();
         System.out.println("kontejner content (mainSpace, crossSpace) nastaven na: ("+ container.mainSpace + ", " + container.crossSpace + ")\n");
+        container.bounds.height = container.crossSpace;
 
         //urceni flex-basis (zakladni velikosti flexu) polozkam
         System.out.println("--------------\nCHILDS: \n");
@@ -44,7 +43,7 @@ public class FlexBoxLayoutManager implements ILayoutManager {
         }
         Collections.sort(ItemList);
 
-        container.layoutItems(ItemList, container);
+        container.layoutItems(ItemList);
 
         return true;
     }

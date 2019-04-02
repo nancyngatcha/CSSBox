@@ -52,6 +52,7 @@ public class FlexContainerBlockBox extends BlockBox {
 
     protected FlexLine firstLine;
 
+    protected int totalHeightOfItems = 0;
 
     public FlexContainerBlockBox(Element n, Graphics2D g, VisualContext ctx) {
         super(n, g, ctx);
@@ -125,50 +126,111 @@ public class FlexContainerBlockBox extends BlockBox {
             return false;
     }
 
-    protected void layoutItems(ArrayList<FlexItemBlockBox> list, FlexContainerBlockBox container) {
+    protected void layoutItems(ArrayList<FlexItemBlockBox> list) {
         ArrayList <FlexLine> lines = new ArrayList<>();
         FlexLine line = firstLine;
         if(line == null)
-            line = new FlexLine(container, 0);
+            line = new FlexLine(this, 0);
         lines.add(line);
 
         for (int i = 0; i < list.size(); i++) {
             FlexItemBlockBox Item = list.get(i);
             System.out.println(Item);
-            Item.flexBasisValue = Item.setFlexBasisValue(container);
-            Item.hypoteticalMainSize = Item.boundFlexBasisByMinAndMaxWidth(Item.flexBasisValue);
+            Item.flexBasisValue = Item.setFlexBasisValue(this);
+            Item.hypoteticalMainSize = Item.boundFlexBasisByMinAndMaxValues(Item.flexBasisValue);
 
-            Item.fixMargins(container);
+//            if (Item.hypoteticalMainSize < Item.getMinimalContentWidth()) {
+//                Item.hypoteticalMainSize = Item.getMinimalContentWidth();
+//                Item.bounds.width = Item.getMinimalContentWidth() + Item.padding.left + Item.padding.right + Item.border.left + Item.border.right + Item.margin.left + Item.margin.right;
+//                Item.content.width = Item.getMinimalContentWidth();
+//            }
 
-            if (container.isDirectionRow()) {
+            if (isDirectionRow())
+                Item.setAvailableWidth(Item.hypoteticalMainSize + Item.padding.left + Item.padding.right + Item.border.left + Item.border.right + Item.margin.left + Item.margin.right);
+            else
+                Item.setAvailableWidth(content.width);
+
+            if (!Item.contblock)  //block elements containing inline elements only
+                Item.layoutInline();
+            else //block elements containing block elements
+                Item.layoutBlocks();
+
+
+            Item.fixMargins(this);
+
+            if (isDirectionRow()) {
                 Item.bounds.width = Item.hypoteticalMainSize + Item.padding.left + Item.padding.right + Item.border.left + Item.border.right + Item.margin.left + Item.margin.right;
                 Item.content.width = Item.hypoteticalMainSize;
 
                 Item.bounds.height = Item.totalHeight();
+                if (Item.flexBasisSetByCont) {
+                    int compwidth = 0;
+                    for (int x = 0; x < Item.getSubBoxNumber(); x++) {
+                        Box subbox = Item.getSubBox(x);
+                        compwidth += subbox.getContentWidth();
+                    }
+                    if (compwidth > Item.flexBasisValue)
+                        compwidth = Item.flexBasisValue;
+                    Item.content.width = compwidth;
+                    Item.bounds.width = compwidth + Item.padding.left + Item.padding.right + Item.border.left + Item.border.right + Item.margin.left + Item.margin.right;
+
+                }
+
             } else {
-                Item.bounds.height = Item.hypoteticalMainSize  + Item.padding.top + Item.padding.bottom + Item.border.top + Item.border.bottom + Item.margin.top+ Item.margin.bottom;
+                Item.bounds.height = Item.hypoteticalMainSize + Item.padding.top + Item.padding.bottom + Item.border.top + Item.border.bottom + Item.margin.top + Item.margin.bottom;
                 Item.content.height = Item.hypoteticalMainSize;
+                if (Item.flexBasisSetByCont) {
+                    int compheight = 0;
+                    for (int x = 0; x < Item.getSubBoxNumber(); x++) {
+                        if (x + 1 == Item.getSubBoxNumber()) {
+                            Box subbox = Item.getSubBox(x);
+                            compheight = subbox.getContentY() + subbox.getContentHeight();
+                        }
+                    }
+
+                    if (compheight > Item.hypoteticalMainSize)
+                        compheight = Item.hypoteticalMainSize;
+
+                    Item.content.height = compheight;
+                    Item.bounds.height = compheight + Item.padding.top + Item.padding.bottom + Item.border.top + Item.border.bottom + Item.margin.top + Item.margin.bottom;
+                }
+
+
+                if(Item.content.width < Item.getMinimalContentWidth()) {
+                    Item.bounds.width = Item.getMinimalContentWidth() + Item.padding.left + Item.padding.right + Item.border.left + Item.border.right + Item.margin.left + Item.margin.right;
+                    Item.content.width = Item.getMinimalContentWidth();
+                }
+
+
 
                 Item.bounds.width = Item.totalWidth();
             }
 
-            boolean result = line.registerItem(Item);
+
+
+            totalHeightOfItems += Item.bounds.height;
+        }
+
+
+        for (int i = 0; i < list.size(); i++) {
+            FlexItemBlockBox Item = list.get(i);
+            boolean result = line.registerItemAndSetItsPosition(Item);
             if(!result) {
                 int sumOfLineAboveHeights = 0;
 
                 for (int y = 0; y < lines.size(); y++) {
                     sumOfLineAboveHeights += lines.get(y).getHeight();
                 }
-                FlexLine newLine = new FlexLine(container, sumOfLineAboveHeights);
+                FlexLine newLine = new FlexLine(this, sumOfLineAboveHeights);
                 lines.add(newLine);
-                newLine.registerItem(Item);
+                newLine.registerItemAndSetItsPosition(Item);
                 line = newLine;
             }
 
-            System.out.println("BOUNDS\nvyska: " + Item.bounds.height);
-            System.out.println("sirka: " + Item.bounds.width);
-            System.out.println("CONTENT\nvyska: " + Item.content.height);
-            System.out.println("sirka: " + Item.content.width);
+//            System.out.println("BOUNDS\nvyska: " + Item.bounds.height);
+//            System.out.println("sirka: " + Item.bounds.width);
+//            System.out.println("CONTENT\nvyska: " + Item.content.height);
+//            System.out.println("sirka: " + Item.content.width);
 
 //          System.out.println("\nflexBasisValue(unbounded): " + subbox.flexBasisValue);
 //          System.out.println("hypoteticalMainSize(bounded): " + subbox.hypoteticalMainSize);
@@ -177,12 +239,26 @@ public class FlexContainerBlockBox extends BlockBox {
 //          System.out.println("ORDER: " + subbox.flexOrderValue);
 //
 //          System.out.println("Containing block: " + subbox.getContainingBlockBox());
-            System.out.println("----------------------------------\n");
 
-            //zvetseni kontejneru, pokud mozno
-            if (Item.bounds.y + Item.totalHeight() > crossSpace) {
-                crossSpace = Item.bounds.y + Item.totalHeight();
-                container.setContentHeight(crossSpace);
+            //zvetseni vysky kontejneru, pokud mozno
+            CSSDecoder dec = new CSSDecoder(ctx);
+
+            if(max_size.height == -1 || Item.bounds.y + Item.totalHeight() < max_size.height) {
+                if (style.getProperty("height") == null
+                        || style.getProperty("height") == CSSProperty.Height.AUTO) {
+                    if (isDirectionRow()) {
+
+                        if (Item.bounds.y + Item.totalHeight() > crossSpace) {
+                            crossSpace = Item.bounds.y + Item.totalHeight();
+                            setContentHeight(crossSpace);
+                        }
+
+                    } else {
+                        mainSpace += Item.bounds.height;
+                        setContentHeight(mainSpace);
+
+                    }
+                }
             }
         }
 
