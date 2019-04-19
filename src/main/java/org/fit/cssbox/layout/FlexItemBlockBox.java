@@ -7,12 +7,12 @@ import java.awt.*;
 
 public class FlexItemBlockBox extends BlockBox  implements Comparable  {
 
-    public static final CSSProperty.AlignSelf ALIGN_SELF_AUTO = CSSProperty.AlignSelf.Auto;
-    public static final CSSProperty.AlignSelf ALIGN_SELF_FLEX_START = CSSProperty.AlignSelf.FlexStart;
-    public static final CSSProperty.AlignSelf ALIGN_SELF_FLEX_END = CSSProperty.AlignSelf.FlexEnd;
-    public static final CSSProperty.AlignSelf ALIGN_SELF_CENTER = CSSProperty.AlignSelf.Center;
-    public static final CSSProperty.AlignSelf ALIGN_SELF_BASELINE = CSSProperty.AlignSelf.Baseline;
-    public static final CSSProperty.AlignSelf ALIGN_SELF_STRETCH = CSSProperty.AlignSelf.Stretch;
+    public static final CSSProperty.AlignSelf ALIGN_SELF_AUTO = CSSProperty.AlignSelf.AUTO;
+    public static final CSSProperty.AlignSelf ALIGN_SELF_FLEX_START = CSSProperty.AlignSelf.FLEX_START;
+    public static final CSSProperty.AlignSelf ALIGN_SELF_FLEX_END = CSSProperty.AlignSelf.FLEX_END;
+    public static final CSSProperty.AlignSelf ALIGN_SELF_CENTER = CSSProperty.AlignSelf.CENTER;
+    public static final CSSProperty.AlignSelf ALIGN_SELF_BASELINE = CSSProperty.AlignSelf.BASELINE;
+    public static final CSSProperty.AlignSelf ALIGN_SELF_STRETCH = CSSProperty.AlignSelf.STRETCH;
 
     public static final CSSProperty.FlexBasis FLEX_BASIS_CONTENT = CSSProperty.FlexBasis.CONTENT;
     public static final CSSProperty.FlexBasis FLEX_BASIS_LENGTH = CSSProperty.FlexBasis.length;
@@ -22,8 +22,6 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable  {
     public static final CSSProperty.FlexGrow FLEX_GROW_NUMBER = CSSProperty.FlexGrow.number;
 
     public static final CSSProperty.FlexShrink FLEX_SHRINK_NUMBER = CSSProperty.FlexShrink.number;
-
-    public static final CSSProperty.Order ORDER_INTEGER = CSSProperty.Order.integer;
 
 
     /** flex basis specified by the style */
@@ -43,11 +41,16 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable  {
 
     protected int hypoteticalMainSize;  // to jest final flex-basis  (flex-basis ukotvená MIN a MAX width)
 
+    protected boolean crossSizeSetByCont;
+    protected boolean crossSizeSetByPercentage;
+
     public FlexItemBlockBox(Element n, Graphics2D g, VisualContext ctx) {
         super(n, g, ctx);
         isblock = true;
         flexBasisValue = 0;
         flexBasisSetByCont = false;
+        crossSizeSetByCont = false;
+        crossSizeSetByPercentage = false;
     }
 
     public FlexItemBlockBox(InlineBox src) {
@@ -55,6 +58,8 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable  {
         isblock = true;
         flexBasisValue = 0;
         flexBasisSetByCont = false;
+        crossSizeSetByCont = false;
+        crossSizeSetByPercentage = false;
     }
 
 
@@ -73,7 +78,7 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable  {
     public void loadFlexItemsStyles(){
 
         alignSelf = style.getProperty("align-self");
-        if (alignSelf == null) alignSelf = CSSProperty.AlignSelf.Auto;
+        if (alignSelf == null) alignSelf = CSSProperty.AlignSelf.AUTO;
 
         flexBasis = style.getProperty("flex-basis");
         if (flexBasis == null) flexBasis = CSSProperty.FlexBasis.AUTO;
@@ -136,13 +141,17 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable  {
         CSSDecoder dec = new CSSDecoder(parentContainer.ctx);
         int contw = parentContainer.getContentWidth();
 
-        if(flexBasis == CSSProperty.FlexBasis.valueOf("length") || flexBasis == CSSProperty.FlexBasis.valueOf("percentage")) {
+        if(flexBasis == FLEX_BASIS_LENGTH || flexBasis == FLEX_BASIS_PERCENTAGE) {
             //used flex-basis
-            if(flexBasis == CSSProperty.FlexBasis.valueOf("percentage") && !parentContainer.isDirectionRow) {
+            if(flexBasis == CSSProperty.FlexBasis.valueOf("percentage") && !parentContainer.isDirectionRow()) {
                 flexBasisSetByCont = true;
             } else {
                 flexBasisValue = dec.getLength(getLengthValue("flex-basis"), false, 0, 0, contw);
             }
+
+            //when used flex basis is smaller than min content -> flex basis = min content
+            if(flexBasisValue < getMinimalContentWidth())
+                flexBasisValue = getMinimalContentWidth();
         }
         else if (flexBasis == FlexItemBlockBox.FLEX_BASIS_CONTENT){
             //TODO content
@@ -151,22 +160,33 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable  {
         else if (flexBasis == FlexItemBlockBox.FLEX_BASIS_AUTO){
             //TODO: auto -> width/height
             if(parentContainer.isDirectionRow()) {
+                //ROW
                 if (style.getProperty("width") == CSSProperty.Width.AUTO || style.getProperty("width") == null) {
                     flexBasisSetByCont = true;
                 }
                 else {
                     flexBasisValue = dec.getLength(getLengthValue("width"), false, 0, 0, contw); //use width
                 }
+
+                if(style.getProperty("height") == null && style.getProperty("min-height") == null){
+                    //vyska itemu u row direction nenastavena
+                    crossSizeSetByCont = true;
+                } else if((style.getProperty("height") == CSSProperty.Height.percentage) && !getContainingBlockBox().hasFixedHeight()){
+                    //vyska itemu u row direction nastavena v %
+                    crossSizeSetByPercentage = true;
+                } else if(style.getProperty("height") == CSSProperty.Height.length)
+                    setContentHeight(dec.getLength(getLengthValue("height"), false, 0, 0, 0));
+
             } else {
+                //COLUMN
                 if (style.getProperty("height") == CSSProperty.Height.AUTO  || style.getProperty("height") == null || style.getProperty("height") == CSSProperty.Height.valueOf("percentage")) {
-//                    if(style.getProperty("min-height") == null)
-//
                     flexBasisSetByCont = true;
                 } else {
                     flexBasisValue = dec.getLength(getLengthValue("height"), false, 0, 0, 0); //use height
                 }
             }
         }
+
 
         if(flexBasisSetByCont)
                 setFlexBasisBasedByContent();
@@ -198,14 +218,13 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable  {
     }
 
     private void setFlexBasisBasedByContent(){
-//        if(contblock)
-//            flexBasisValue = getMinimalContentWidth();
-//        else
-            flexBasisValue = getMaximalContentWidth();
+        System.out.println("FLEX BASIS JE SETNUTA CONTENTEM");
+        flexBasisValue = getMaximalContentWidth();
     }
 
 
-    protected void fixMargins(FlexContainerBlockBox parent){
+    protected void fixMargins(){
+        FlexContainerBlockBox parent = (FlexContainerBlockBox) this.getContainingBlockBox();
         CSSDecoder decoder = new CSSDecoder(parent.ctx);
 
         if(style.getProperty("margin-right") != CSSProperty.Margin.AUTO || style.getProperty("margin") != CSSProperty.Margin.AUTO) {
@@ -237,5 +256,12 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable  {
             return 0;
         int compareOrder = ((FlexItemBlockBox) o).getFlexOrderValue();
         return this.flexOrderValue - compareOrder;
+    }
+
+    protected boolean isSetAlignSelf(){
+        if(alignSelf == CSSProperty.AlignSelf.AUTO)
+            return false;
+        else
+            return true;
     }
 }
