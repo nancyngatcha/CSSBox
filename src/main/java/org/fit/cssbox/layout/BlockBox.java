@@ -803,15 +803,7 @@ public class BlockBox extends ElementBox
         int x2 = fright.getWidth(floatY) - floatXr;
         if (x1 < 0) x1 = 0;
         if (x2 < 0) x2 = 0;
-        int wlimit = 0;
-
-        //todo comment this
-        if(parent instanceof FlexItemBlockBox && !((FlexContainerBlockBox)(parent.parent)).isDirectionRow()) {
-            wlimit = parent.content.width;
-        }
-        else
-            wlimit = getAvailableContentWidth();
-
+        int wlimit = getAvailableContentWidth();
         int minx1 = 0 - floatXl;   //maximal available width if there were no floats
         int minx2 = 0 - floatXr;
         if (minx1 < 0) minx1 = 0;
@@ -2149,23 +2141,11 @@ public class BlockBox extends ElementBox
             declMargin.right = margin.right;
             /* For the first time, we always try to use the maximal width even for the
              * boxes out of the flow. When updating, only the in-flow boxes are adjusted. */
-            if ((!update || isInFlow()))
+            if (!update || isInFlow())
             {
-                if((getContainingBlockBox() instanceof FlexItemBlockBox && ((FlexContainerBlockBox)(getContainingBlockBox().getContainingBlockBox())).isDirectionRow())){
-                    FlexItemBlockBox item = (FlexItemBlockBox) getContainingBlockBox();
-                    if(item.flexBasisSetByCont) {
-                            content.width = item.getMaximalContentWidth();
-                    } else {
-                        content.width = contw - margin.left - border.left - padding.left
-                                - padding.right - border.right - margin.right;
-                        if (content.width < 0) content.width = 0;
-                    }
-
-                } else {
-                    content.width = contw - margin.left - border.left - padding.left
-                            - padding.right - border.right - margin.right;
-                    if (content.width < 0) content.width = 0;
-                }
+                content.width = contw - margin.left - border.left - padding.left
+                                  - padding.right - border.right - margin.right;
+                if (content.width < 0) content.width = 0;
             }
         }
         else
