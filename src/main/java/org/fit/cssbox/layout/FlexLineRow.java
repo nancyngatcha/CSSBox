@@ -4,7 +4,7 @@ import cz.vutbr.web.css.CSSProperty;
 
 import java.util.ArrayList;
 
-public class FlexLine {
+public class FlexLineRow {
     /**
      * The FlexContainerBlockBox containing the lines
      */
@@ -17,9 +17,6 @@ public class FlexLine {
 
     private int height;
 
-    /**
-     * The Y position of this line top
-     */
     private int y;
 
     private boolean isFirstItem;
@@ -30,9 +27,9 @@ public class FlexLine {
 
     protected ArrayList<FlexItemBlockBox> itemsInLine;
 
-    private FlexItemBlockBox itemWithMaxTopPadding;
+    private FlexItemBlockBox refItem;
 
-    public FlexLine(FlexContainerBlockBox parent) {
+    public FlexLineRow(FlexContainerBlockBox parent) {
         this.parent = parent;
         y = 0;
         height = 0;
@@ -40,7 +37,7 @@ public class FlexLine {
         isFirstItem = true;
         width = parent.getContentWidth();
         remainingWidthSpace = width;
-        itemWithMaxTopPadding = null;
+        refItem = null;
         savedHeight = -1;
     }
 
@@ -82,9 +79,9 @@ public class FlexLine {
             this.remainingWidthSpace = 0;
     }
 
-    protected boolean registerItemAndSetItsPosition(FlexItemBlockBox item) {
+    protected boolean registerItem(FlexItemBlockBox item) {
 
-        if(parent.flexWrap == CSSProperty.FlexWrap.NOWRAP && parent.hasFixedHeight())
+        if(parent.flexWrap == FlexContainerBlockBox.FLEX_WRAP_NOWRAP && parent.hasFixedHeight())
             setHeight(parent.getContentHeight());
 
 
@@ -94,7 +91,7 @@ public class FlexLine {
             setRemainingWidthSpace(remainingWidthSpace - item.getWidth());
             itemsInLine.add(item);
 
-            itemWithMaxTopPadding = item;
+            refItem = item;
 
 
             isFirstItem = false;
@@ -103,15 +100,12 @@ public class FlexLine {
         }
 
         //not first item in row, does it fit into line?
-//        int sumOfItemsWidths = 0;
-//        for(int i = 0; i < itemsInLine.size(); i++)
-//            sumOfItemsWidths += itemsInLine.get(i).getWidth();
+
 
 
         if((item.totalWidth() > remainingWidthSpace) && parent.flexWrap != FlexContainerBlockBox.FLEX_WRAP_NOWRAP)
             return false;
 
-        if(!((FlexContainerBlockBox)(item.parent)).isDirectionRow()) return false;
         //vejde se na radek
 
         //je treba zmenit vysku radku?
@@ -132,28 +126,33 @@ public class FlexLine {
     protected void setPositionAndAdaptHeight(FlexItemBlockBox item, int sumOfItemsWidths){
         int x;
         if(parent.flexDirection == FlexContainerBlockBox.FLEX_DIRECTION_ROW_REVERSE){
-            x = parent.mainSpace  - sumOfItemsWidths - item.bounds.width;
+            x = parent.mainSize - sumOfItemsWidths - item.bounds.width;
         } else {
             x = sumOfItemsWidths;
         }
 
         if (getHeight() < item.getHeight()) {
-            if(!(parent.flexWrap == CSSProperty.FlexWrap.NOWRAP && parent.hasFixedHeight()))
+            if(!(parent.flexWrap == FlexContainerBlockBox.FLEX_WRAP_NOWRAP && parent.hasFixedHeight()))
                 setHeight(item.getHeight());
 
             //zmenila se velikost line(pro itemy, ktere jiz byly v itemsInLine)
              if (parent.alignItems == FlexContainerBlockBox.ALIGN_ITEMS_STRETCH) {
                     for (int y = 0; y < itemsInLine.size(); y++) {
-                        if((itemsInLine.get(y).alignSelf == CSSProperty.AlignSelf.AUTO && parent.alignItems == CSSProperty.AlignItems.STRETCH)  || itemsInLine.get(y).alignSelf == CSSProperty.AlignSelf.STRETCH ) {
+                        FlexItemBlockBox itemInLine = itemsInLine.get(y);
+                        if((itemInLine.alignSelf == FlexItemBlockBox.ALIGN_SELF_AUTO && parent.alignItems == FlexContainerBlockBox.ALIGN_ITEMS_STRETCH)
+                                || itemInLine.alignSelf == FlexItemBlockBox.ALIGN_SELF_STRETCH) {
 
                             //if item is set by height value, it does not stretch
-                            if (!itemsInLine.get(y).hasFixedHeight() && !itemsInLine.get(y).isSetAlignSelf() && itemsInLine.get(y).alignSelf != CSSProperty.AlignSelf.STRETCH) {
+                            if (!itemInLine.hasFixedHeight() && !itemInLine.isAlignSelfAuto() && itemInLine.alignSelf != FlexItemBlockBox.ALIGN_SELF_STRETCH) {
 
-                                itemsInLine.get(y).bounds.height = getHeight();
-                                if (itemsInLine.get(y).bounds.height > itemsInLine.get(y).max_size.height && itemsInLine.get(y).max_size.height != -1) {
-                                    itemsInLine.get(y).bounds.height = itemsInLine.get(y).max_size.height + itemsInLine.get(y).padding.top + itemsInLine.get(y).padding.bottom + itemsInLine.get(y).border.top + itemsInLine.get(y).border.bottom + itemsInLine.get(y).margin.top + itemsInLine.get(y).margin.bottom;
+                                itemInLine.bounds.height = getHeight();
+                                if (itemInLine.bounds.height >itemInLine.max_size.height && itemInLine.max_size.height != -1) {
+                                    itemInLine.bounds.height = itemInLine.max_size.height + itemInLine.padding.top + itemInLine.padding.bottom +
+                                            itemInLine.border.top + itemInLine.border.bottom +
+                                            itemInLine.margin.top + itemInLine.margin.bottom;
                                 }
-                                itemsInLine.get(y).content.height = itemsInLine.get(y).bounds.height - itemsInLine.get(y).padding.top - itemsInLine.get(y).padding.bottom - itemsInLine.get(y).border.top - itemsInLine.get(y).border.bottom - itemsInLine.get(y).margin.top - itemsInLine.get(y).margin.bottom;
+                                itemInLine.content.height = itemInLine.bounds.height - itemInLine.padding.top - itemInLine.padding.bottom -
+                                        itemInLine.border.top - itemInLine.border.bottom - itemInLine.margin.top - itemInLine.margin.bottom;
                             }
                         }
 
@@ -173,7 +172,7 @@ public class FlexLine {
 
         //fixing line height because of align-items baseline
         if (getHeight() < item.bounds.y - y +item.getHeight()) {
-            if (!(parent.flexWrap == CSSProperty.FlexWrap.NOWRAP && parent.hasFixedHeight()))
+            if (!(parent.flexWrap == FlexContainerBlockBox.FLEX_WRAP_NOWRAP && parent.hasFixedHeight()))
                 setHeight(item.bounds.y - y + item.getHeight());
         }
 
@@ -209,17 +208,24 @@ public class FlexLine {
 
 
     private boolean considerAlignSelf(FlexItemBlockBox item, int x){
-        if(item.alignSelf == CSSProperty.AlignSelf.AUTO)
+        if(!item.isAlignSelfAuto())
             return false;
 
-            if(item.alignSelf == CSSProperty.AlignSelf.FLEX_START) {
+        if(item.alignSelf == CSSProperty.AlignSelf.INHERIT) {
+            CSSProperty.AlignSelf parentAlignSelf =  parent.style.getProperty("align-self");
+            if(parentAlignSelf != null && parentAlignSelf != CSSProperty.AlignSelf.AUTO && parentAlignSelf != CSSProperty.AlignSelf.INHERIT && parentAlignSelf != CSSProperty.AlignSelf.INITIAL){
+                item.alignSelf = parentAlignSelf;
+            }
+        }
+
+            if(item.alignSelf == FlexItemBlockBox.ALIGN_SELF_FLEX_START) {
                 item.setPosition(x, y);
 
-            } else if(item.alignSelf == CSSProperty.AlignSelf.FLEX_END) {
+            } else if(item.alignSelf == FlexItemBlockBox.ALIGN_SELF_FLEX_END) {
                  item.setPosition(x, y + getHeight() - item.getHeight());
-            } else if(item.alignSelf == CSSProperty.AlignSelf.CENTER) {
+            } else if(item.alignSelf == FlexItemBlockBox.ALIGN_SELF_CENTER) {
                  item.setPosition(x, y + (getHeight() - item.getHeight()) / 2);
-            } else if(item.alignSelf == CSSProperty.AlignSelf.BASELINE) {
+            } else if(item.alignSelf == FlexItemBlockBox.ALIGN_SELF_BASELINE) {
                alignBaseline(item, x);
             } else {
                 //STRETCH
@@ -230,21 +236,24 @@ public class FlexLine {
 
 
     private void alignBaseline(FlexItemBlockBox item, int x){
-        if (item.getPadding().top > itemWithMaxTopPadding.getPadding().top) {
-            itemWithMaxTopPadding = item;
+        if (item.getPadding().top + item.getMargin().top + item.ctx.getBaselineOffset() > refItem.getPadding().top + refItem.getMargin().top + refItem.ctx.getBaselineOffset()) {
+            refItem = item;
         }
         for (int j = 0; j < itemsInLine.size(); j++) {
-            if((itemsInLine.get(j).alignSelf == CSSProperty.AlignSelf.AUTO && parent.alignItems == CSSProperty.AlignItems.BASELINE)  || itemsInLine.get(j).alignSelf == CSSProperty.AlignSelf.BASELINE ) {
-                if (itemsInLine.get(j) != itemWithMaxTopPadding) {
-                    itemsInLine.get(j).setPosition(itemsInLine.get(j).bounds.x, y + itemWithMaxTopPadding.getPadding().top + itemWithMaxTopPadding.getMargin().top - itemsInLine.get(j).getPadding().top - itemsInLine.get(j).getMargin().top);
-                    if (getHeight() < (itemWithMaxTopPadding.getPadding().top + itemWithMaxTopPadding.getMargin().top - itemsInLine.get(j).getPadding().top - itemsInLine.get(j).getMargin().top + itemsInLine.get(j).bounds.height)) {
-                        setHeight((itemWithMaxTopPadding.getPadding().top + itemWithMaxTopPadding.getMargin().top - itemsInLine.get(j).getPadding().top - itemsInLine.get(j).getMargin().top + itemsInLine.get(j).bounds.height));
+            FlexItemBlockBox itemInLine = itemsInLine.get(j);
+            if((!itemInLine.isAlignSelfAuto() && parent.alignItems == CSSProperty.AlignItems.BASELINE)  || itemInLine.alignSelf == CSSProperty.AlignSelf.BASELINE ) {
+                if (itemInLine != refItem) {
+                    itemInLine.setPosition(itemInLine.bounds.x, y + refItem.getPadding().top + refItem.getMargin().top+ refItem.ctx.getBaselineOffset()
+                            - itemInLine.getPadding().top - itemInLine.getMargin().top - itemInLine.ctx.getBaselineOffset());
+                    if (getHeight() < (refItem.getPadding().top + refItem.getMargin().top + refItem.ctx.getBaselineOffset()
+                            - itemInLine.getPadding().top - itemInLine.getMargin().top  - itemInLine.ctx.getBaselineOffset() + itemInLine.bounds.height)) {
+                        setHeight((refItem.getPadding().top + refItem.getMargin().top  + refItem.ctx.getBaselineOffset()- itemInLine.getPadding().top - itemInLine.getMargin().top - itemInLine.ctx.getBaselineOffset() + itemInLine.bounds.height));
 
                     }
                     parent.fixContainerHeight(itemsInLine.get(j));
                 }
 
-            item.setPosition(x, y + itemWithMaxTopPadding.getPadding().top + itemWithMaxTopPadding.getMargin().top - item.getPadding().top - item.getMargin().top);
+            item.setPosition(x, y + refItem.getPadding().top + refItem.getMargin().top+ refItem.ctx.getBaselineOffset() - item.getPadding().top - item.getMargin().top - item.ctx.getBaselineOffset());
             } else {
                 item.setPosition(x, y);
             }
@@ -279,31 +288,32 @@ public class FlexLine {
 
     }
 
-    protected void applyAlignContent(FlexLine flexLine,ArrayList<FlexLine> lines, int countOfPreviousLines){
-        if(parent.crossSpace == 0 || parent.flexWrap == CSSProperty.FlexWrap.NOWRAP) //is container height set? is container nowrap?
+    protected void applyAlignContent(FlexLineRow flexLine, ArrayList<FlexLineRow> lines, int countOfPreviousLines){
+        if(parent.crossSize == 0 || parent.flexWrap == FlexContainerBlockBox.FLEX_WRAP_NOWRAP) //is container height set? is container nowrap?
             return;
 
-        int remainingHeightSpace = parent.crossSpace;
+        int remainingHeightSpace = parent.crossSize;
         for (int iline = 0; iline < lines.size(); iline++) {
-            FlexLine line = lines.get(iline);
+            FlexLineRow line = lines.get(iline);
             if(line.savedHeight == -1)
                 remainingHeightSpace -= line.getHeight();
             else
                 remainingHeightSpace -= line.savedHeight;
         }
-        if(parent.alignContent == CSSProperty.AlignContent.FLEX_START){
+        if(parent.alignContent == FlexContainerBlockBox.ALIGN_CONTENT_FLEX_START){
             return;
-        } else if(parent.alignContent == CSSProperty.AlignContent.FLEX_END){
+        } else if(parent.alignContent == FlexContainerBlockBox.ALIGN_CONTENT_FLEX_END){
             flexLine.setY(flexLine.getY()+remainingHeightSpace);
-        } else if(parent.alignContent == CSSProperty.AlignContent.CENTER){
+        } else if(parent.alignContent == FlexContainerBlockBox.ALIGN_CONTENT_CENTER){
             flexLine.setY(flexLine.getY()+remainingHeightSpace/2);
-        } else if(parent.alignContent == CSSProperty.AlignContent.STRETCH){
+        } else if(parent.alignContent == FlexContainerBlockBox.ALIGN_CONTENT_STRETCH){
             flexLine.savedHeight = flexLine.getHeight();
             flexLine.setHeight(flexLine.getHeight() + remainingHeightSpace/lines.size());
 
-        } else if(parent.alignContent == CSSProperty.AlignContent.SPACE_BETWEEN){
+        } else if(parent.alignContent == FlexContainerBlockBox.ALIGN_CONTENT_SPACE_BETWEEN){
+            if(lines.size() != 1)
                 flexLine.setY(flexLine.getY()+(countOfPreviousLines)*remainingHeightSpace/(lines.size()-1));
-        } else if(parent.alignContent == CSSProperty.AlignContent.SPACE_AROUND){
+        } else if(parent.alignContent == FlexContainerBlockBox.ALIGN_CONTENT_SPACE_AROUND){
             if(countOfPreviousLines == 0)
                 flexLine.setY(flexLine.getY()+ remainingHeightSpace/ 2 / lines.size());
             else
