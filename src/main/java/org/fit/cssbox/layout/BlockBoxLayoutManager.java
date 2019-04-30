@@ -48,7 +48,13 @@ public class BlockBoxLayoutManager implements LayoutManager {
 
         /* Always try to use the full width. If the box is not in flow, its width
          * is updated after the layout */
-        bbox.setAvailableWidth(bbox.totalWidth());
+        if (bbox.parent instanceof GridItem) {
+            GridItem griditem = (GridItem) bbox.parent;
+            bbox.setAvailableWidth(griditem.getAvailableContentWidth());
+            bbox.content.width = griditem.getAvailableContentWidth();
+        } else {
+            bbox.setAvailableWidth(bbox.totalWidth());
+        }
 
         if (!bbox.contblock)  //block elements containing inline elements only
             bbox.layoutInline();

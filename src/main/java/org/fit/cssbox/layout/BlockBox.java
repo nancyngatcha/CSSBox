@@ -2141,7 +2141,7 @@ public class BlockBox extends ElementBox
             declMargin.right = margin.right;
             /* For the first time, we always try to use the maximal width even for the
              * boxes out of the flow. When updating, only the in-flow boxes are adjusted. */
-            if (!update || isInFlow())
+            if ((!update || isInFlow()) && !(this.parent instanceof GridItem))
             {
                 content.width = contw - margin.left - border.left - padding.left
                                   - padding.right - border.right - margin.right;
