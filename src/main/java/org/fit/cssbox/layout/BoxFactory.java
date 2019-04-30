@@ -918,8 +918,8 @@ public class BoxFactory
         root.setViewport(viewport);
         root.setStyle(style);
 
-        if(parent.getDisplay() == ElementBox.DISPLAY_GRID)
-            root = new GridItem((InlineBox) root);
+        if(root.getDisplay() == ElementBox.DISPLAY_GRID)
+            root = new GridWrapperBlockBox((InlineBox) root);
 
         else if (root.getDisplay() == ElementBox.DISPLAY_LIST_ITEM)
             root = new ListItemBox((InlineBox) root);
@@ -943,8 +943,8 @@ public class BoxFactory
             root = new TableColumnGroup((InlineBox) root);
         else if (root.getDisplay() == ElementBox.DISPLAY_INLINE_BLOCK)
             root = new InlineBlockBox((InlineBox) root);
-        else if (root.getDisplay() == ElementBox.DISPLAY_GRID) /***************************************************/
-            root = new GridWrapperBlockBox((InlineBox) root);
+        else if (parent instanceof GridWrapperBlockBox) /***************************************************/
+            root = new GridItem((InlineBox) root);
         else if (root.isBlock())
             root = new BlockBox((InlineBox) root);
         return root;
