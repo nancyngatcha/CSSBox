@@ -1,5 +1,7 @@
 package org.fit.cssbox.layout;
 
+import cz.vutbr.web.css.TermList;
+
 public class GridItemRowColumn {
 
     public int rowStart = 0;
@@ -9,6 +11,14 @@ public class GridItemRowColumn {
     public int columnStart = 0;
 
     public int columnEnd = 0;
+
+    public TermList rowStartSpan = null;
+
+    public TermList rowEndSpan = null;
+
+    public TermList columnStartSpan = null;
+
+    public TermList columnEndSpan = null;
 
     public GridItemRowColumn() {
 
