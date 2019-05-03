@@ -40,9 +40,12 @@ public class BlockBoxLayoutManager implements ILayoutManager {
          * is updated after the layout */
         if(owner.parent instanceof FlexItemBlockBox){
             FlexItemBlockBox item = (FlexItemBlockBox) owner.parent;
-            owner.setAvailableWidth(item.hypoteticalMainSize);
-            owner.bounds.width = item.hypoteticalMainSize  + item.padding.left + item.padding.right + item.border.left + item.border.right + item.margin.left + item.margin.right;
-            owner.content.width = item.hypoteticalMainSize;
+            FlexContainerBlockBox parent = (FlexContainerBlockBox) item.getContainingBlockBox();
+            if(parent.isRowContainer()) {
+                owner.setAvailableWidth(item.hypotheticalMainSize);
+            } else {
+                owner.setAvailableWidth(item.content.width);
+            }
         } else {
             owner.widthComputed = true;
             owner.setAvailableWidth(owner.totalWidth());
