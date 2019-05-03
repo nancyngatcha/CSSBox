@@ -788,7 +788,7 @@ public class BoxFactory
         if (block)
         {
             Element anelem = createAnonymousElement(child.getNode().getOwnerDocument(), "Xdiv", "block");
-            if(parent.display == ElementBox.DISPLAY_FLEX || parent.display == ElementBox.DISPLAY_INLINE_FLEX)
+            if(parent.display == ElementBox.DISPLAY_FLEX)
                 anbox = new FlexItemBlockBox(anelem, (Graphics2D) child.getGraphics().create(), child.getVisualContext().create());
             else
                 anbox = new BlockBox(anelem, (Graphics2D) child.getGraphics().create(), child.getVisualContext().create());
@@ -916,7 +916,7 @@ public class BoxFactory
         ElementBox root = new InlineBox(n, (Graphics2D) parent.getGraphics().create(), parent.getVisualContext().create());
         root.setViewport(viewport);
         root.setStyle(style);
-        if (root.getDisplay() == ElementBox.DISPLAY_FLEX || root.getDisplay() == ElementBox.DISPLAY_INLINE_FLEX)
+        if (root.getDisplay() == ElementBox.DISPLAY_FLEX)
             root = new FlexContainerBlockBox((InlineBox) root);
         else if (root.getDisplay() == ElementBox.DISPLAY_LIST_ITEM)
             root = new ListItemBox((InlineBox) root);
