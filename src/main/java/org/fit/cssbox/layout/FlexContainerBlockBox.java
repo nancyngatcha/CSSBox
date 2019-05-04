@@ -378,9 +378,9 @@ public class FlexContainerBlockBox extends BlockBox {
                 if(isRowContainer()) {
                     int result = (int) (availwidth - pieceOfOverflowSize * itemInRow.flexShrinkValue);
 
-                    if (result < itemInRow.min_size.width && itemInRow.min_size.width != -1) {
+                    if (itemInRow.hypotheticalMainSize + result < itemInRow.min_size.width && itemInRow.min_size.width != -1) {
                         itemInRow.hypotheticalMainSize = itemInRow.min_size.width;
-                    } else if(result < itemInRow.getMinimalContentWidth()) {
+                    } else if(itemInRow.hypotheticalMainSize + result < itemInRow.getMinimalContentWidth()) {
                         //item should shrink less than its main size content, it is not possible
                         itemInRow.hypotheticalMainSize = itemInRow.getMinimalContentWidth();
                     }else
