@@ -39,6 +39,7 @@ public class BlockBoxLayoutManager implements ILayoutManager {
         /* Always try to use the full width. If the owner is not in flow, its width
          * is updated after the layout */
         if(owner.parent instanceof FlexItemBlockBox){
+            //it is content of flex item
             FlexItemBlockBox item = (FlexItemBlockBox) owner.parent;
             FlexContainerBlockBox parent = (FlexContainerBlockBox) item.getContainingBlockBox();
             if(parent.isRowContainer()) {
@@ -46,7 +47,12 @@ public class BlockBoxLayoutManager implements ILayoutManager {
             } else {
                 owner.setAvailableWidth(item.content.width);
             }
+            owner.content.width = owner.availwidth;
         } else {
+            /* Always try to use the full width. If the owner is not in flow, its width
+             * is updated after the layout */
+
+            //the width should be fixed from this point
             owner.widthComputed = true;
             owner.setAvailableWidth(owner.totalWidth());
         }

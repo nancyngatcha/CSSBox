@@ -2141,10 +2141,16 @@ public class BlockBox extends ElementBox
             declMargin.right = margin.right;
             /* For the first time, we always try to use the maximal width even for the
              * boxes out of the flow. When updating, only the in-flow boxes are adjusted. */
-            if (!update || isInFlow())
+            if (!update || isInFlow() )
             {
-                content.width = contw - margin.left - border.left - padding.left
-                                  - padding.right - border.right - margin.right;
+                if((parent instanceof FlexItemBlockBox)){
+                    content.width = parent.availwidth - parent.margin.left - parent.border.left - parent.padding.left
+                            - parent.padding.right - parent.border.right - parent.margin.right;
+                } else {
+                    content.width = contw - margin.left - border.left - padding.left
+                            - padding.right - border.right - margin.right;
+
+                }
                 if (content.width < 0) content.width = 0;
             }
         }

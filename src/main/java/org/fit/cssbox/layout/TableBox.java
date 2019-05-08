@@ -38,7 +38,7 @@ import cz.vutbr.web.css.TermList;
  * 
  * @author burgetr
  */
-public class TableBox extends BlockBox
+public class TableBox extends FlexItemBlockBox
 {
     //private static Logger log = LoggerFactory.getLogger(TableBox.class);
     

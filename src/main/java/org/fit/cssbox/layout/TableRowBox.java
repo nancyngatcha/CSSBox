@@ -33,7 +33,7 @@ import org.w3c.dom.Element;
  * A box that represents a single table row. 
  * @author burgetr
  */
-public class TableRowBox extends BlockBox
+public class TableRowBox extends FlexItemBlockBox
 {
     protected Vector<TableCellBox> cells;
     protected Iterator<TableCellBox> cursor;

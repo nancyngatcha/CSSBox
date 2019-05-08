@@ -30,7 +30,7 @@ import org.w3c.dom.Element;
  * A box that contains the table caption. 
  * @author burgetr
  */
-public class TableCaptionBox extends BlockBox
+public class TableCaptionBox extends FlexItemBlockBox
 {
     //private static Logger log = LoggerFactory.getLogger(TableCaptionBox.class);
 

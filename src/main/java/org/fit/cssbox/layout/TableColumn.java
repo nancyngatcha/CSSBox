@@ -36,7 +36,7 @@ import org.w3c.dom.Element;
  * 
  * @author burgetr
  */
-public class TableColumn extends BlockBox
+public class TableColumn extends FlexItemBlockBox
 {
     private static Logger log = LoggerFactory.getLogger(TableColumn.class);
 

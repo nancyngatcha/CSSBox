@@ -4,10 +4,21 @@ import cz.vutbr.web.css.CSSProperty;
 
 import java.util.ArrayList;
 
+/**
+ * Flex line for "storing" and aligning flex items, which are in the same line in horizontal (row) container.
+ */
 public class FlexLineRow extends FlexLine{
 
+    /** saved start remaining height used for align-content: stretch */
     protected int savedHeight;
 
+    /** y coordinate of top side of flex line */
+    protected int y;
+
+    /**
+     * Creates new instance of Flex line for horizontal (row) container.
+     * @param owner container
+     */
     public FlexLineRow(FlexContainerBlockBox owner) {
         this.owner = owner;
         y = 0;
@@ -21,8 +32,17 @@ public class FlexLineRow extends FlexLine{
     }
 
 
+    public int getY() {
+        return y;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
+
+
     @Override
-    protected void setPositionAndAdaptHeight(FlexItemBlockBox item){
+    protected void setPositionAndAdjustCrossSize(FlexItemBlockBox item){
         if (getHeight() < item.getHeight()) {
             if(!(owner.flexWrap == FlexContainerBlockBox.FLEX_WRAP_NOWRAP && owner.hasFixedHeight()))
                 setHeight(item.getHeight());
@@ -60,7 +80,7 @@ public class FlexLineRow extends FlexLine{
                 }
         }
 
-        setYPositionToItem(item);
+        setCrossCoordToItem(item);
 
         //fixing line height because of align-items baseline
         if (getHeight() < item.bounds.y - y +item.getHeight()) {
@@ -70,7 +90,7 @@ public class FlexLineRow extends FlexLine{
 
         for (int c = 0; c < itemsInLine.size(); c++) {
             if(itemsInLine.get(c).alignSelf != CSSProperty.AlignSelf.AUTO){
-                considerAlignSelf(itemsInLine.get(c));
+                applyAlignSelf(itemsInLine.get(c));
             }
         }
     }
@@ -81,17 +101,12 @@ public class FlexLineRow extends FlexLine{
             setHeight(owner.crossSize);
             return;
         }
-        if (itemsInLine.size() == 1)
-            setHeight(itemsInLine.get(0).bounds.height);
-        else {
             int height = 0;
             for (FlexItemBlockBox item : itemsInLine) {
                 if (height < item.bounds.height)
                     height = item.bounds.height;
             }
             setHeight(height);
-
-        }
 
     }
 
@@ -100,17 +115,17 @@ public class FlexLineRow extends FlexLine{
         for (int j = 0; j < itemsInLine.size(); j++) {
             if (j == 0) {
                 //is first item, so it is easier to handle (it does not need to fix previous items)
-                setYPositionToItem(itemsInLine.get(j));
+                setCrossCoordToItem(itemsInLine.get(j));
                 continue;
             }
-            setPositionAndAdaptHeight(itemsInLine.get(j));
+            setPositionAndAdjustCrossSize(itemsInLine.get(j));
         }
     }
 
     @Override
-    protected void setYPositionToItem(FlexItemBlockBox item){
+    protected void setCrossCoordToItem(FlexItemBlockBox item){
 
-        if(considerAlignSelf(item))
+        if(applyAlignSelf(item))
             return;
 
          if (owner.alignItems == FlexContainerBlockBox.ALIGN_ITEMS_FLEX_START)
@@ -134,8 +149,8 @@ public class FlexLineRow extends FlexLine{
             alignStretch(item);
     }
 
-
-    private boolean considerAlignSelf(FlexItemBlockBox item){
+    @Override
+    protected boolean applyAlignSelf(FlexItemBlockBox item){
         if(!item.isNotAlignSelfAuto())
             return false;
 
@@ -165,13 +180,13 @@ public class FlexLineRow extends FlexLine{
             alignBaseline(item);
         else //STRETCH
             alignStretch(item);
-
-
-
     return true;
     }
 
-
+    /**
+     * Aligns item according to align-items (or align-self) value baseline.
+     * @param item item to align
+     */
     private void alignBaseline(FlexItemBlockBox item){
         if (item.getPadding().top + item.getMargin().top + item.ctx.getBaselineOffset() > refItem.getPadding().top + refItem.getMargin().top + refItem.ctx.getBaselineOffset()) {
             refItem = item;
@@ -197,6 +212,10 @@ public class FlexLineRow extends FlexLine{
         }
     }
 
+    /**
+     * Aligns item according to align-items (or align-self) value stretch.
+     * @param item item to align
+     */
     private void alignStretch(FlexItemBlockBox item){
         if(!item.hasFixedHeight()) {
             item.bounds.height = getHeight();
@@ -221,7 +240,10 @@ public class FlexLineRow extends FlexLine{
         }
         item.content.height = item.bounds.height - item.padding.top - item.padding.bottom - item.border.top - item.border.bottom - item.margin.top - item.margin.bottom;
 
-        item.setPosition(0, y);
+        if(owner.flexWrap == FlexContainerBlockBox.FLEX_WRAP_WRAP_REVERSE)
+            item.setPosition(0, y + getHeight() - item.getHeight());
+        else
+            item.setPosition(0, y);
 
     }
 
@@ -273,5 +295,99 @@ public class FlexLineRow extends FlexLine{
 
         }
     }
+
+    @Override
+    protected void alignByJustifyContent(){
+        int widthOfPreviousItems = 0;
+        int totalWidthOfItems = 0;
+        for(int j = 0; j < itemsInLine.size(); j++)
+            totalWidthOfItems += itemsInLine.get(j).getWidth();
+
+        if((owner.isDirectionReversed() || owner.justifyContent == FlexContainerBlockBox.JUSTIFY_CONTENT_FLEX_END) &&
+                owner.justifyContent != FlexContainerBlockBox.JUSTIFY_CONTENT_SPACE_BETWEEN &&
+                owner.justifyContent != FlexContainerBlockBox.JUSTIFY_CONTENT_FLEX_START) {
+            for (int j = itemsInLine.size() - 1; j >= 0; j--) {
+                FlexItemBlockBox item = itemsInLine.get(j);
+                applyJustifyContent(item, widthOfPreviousItems, j, totalWidthOfItems);
+                widthOfPreviousItems += item.getWidth();
+
+            }
+        } else {
+            for (int j = 0; j < itemsInLine.size(); j++) {
+                FlexItemBlockBox item = itemsInLine.get(j);
+                applyJustifyContent(item, widthOfPreviousItems, j, totalWidthOfItems);
+                widthOfPreviousItems += item.getWidth();
+            }
+        }
+    }
+    @Override
+    protected void applyJustifyContent(FlexItemBlockBox item, int widthOfPreviousItems, int j, int totalWidthOfItems){
+
+        if  (owner.justifyContent == FlexContainerBlockBox.JUSTIFY_CONTENT_FLEX_END) {
+            if (owner.isDirectionReversed())
+                item.setPosition(widthOfPreviousItems, item.bounds.y);
+            else
+                item.setPosition(owner.mainSize - widthOfPreviousItems - item.bounds.width , item.bounds.y);
+
+        } else if (owner.justifyContent == FlexContainerBlockBox.JUSTIFY_CONTENT_CENTER) {
+            int halfOfRemainSpace = (owner.mainSize) / 2;
+            item.setPosition(halfOfRemainSpace - totalWidthOfItems/2 + widthOfPreviousItems, item.bounds.y);
+
+        } else if (owner.justifyContent == FlexContainerBlockBox.JUSTIFY_CONTENT_SPACE_BETWEEN) {
+            if(itemsInLine.size()-1 == 0 || totalWidthOfItems > owner.mainSize){
+                //only one item or items are outside of container - it works like start
+                if (owner.isDirectionReversed())
+                    item.setPosition(owner.mainSize - widthOfPreviousItems - item.bounds.width , item.bounds.y);
+                else
+                    item.setPosition(widthOfPreviousItems, item.bounds.y);
+
+            } else {
+                int spaceBetween = 0;
+
+                if(owner.isDirectionReversed()) {
+                    if(j == 0) {
+                        item.setPosition(owner.mainSize -item.bounds.width, item.bounds.y);
+                    } else if (j == itemsInLine.size()-1) {
+                        item.setPosition(0, item.bounds.y);
+                    } else {//it is not first item in row
+                        spaceBetween = getRemainingMainSpace() / (itemsInLine.size() - 1);
+                        item.setPosition(spaceBetween * (itemsInLine.size()-1 -j) + totalWidthOfItems - widthOfPreviousItems - item.bounds.width, item.bounds.y);
+                    }
+                } else {
+                    if (j == 0) {
+                        item.setPosition(0, item.bounds.y);
+                    } else {//it is not first item in row
+                        spaceBetween = getRemainingMainSpace() / (itemsInLine.size() - 1);
+                        item.setPosition(spaceBetween * j + widthOfPreviousItems, item.bounds.y);
+                    }
+                }
+            }
+
+        } else if (owner.justifyContent == FlexContainerBlockBox.JUSTIFY_CONTENT_SPACE_AROUND) {
+            if(itemsInLine.size()-1 == 0 || totalWidthOfItems > owner.mainSize){
+                //only one item - it works like center
+                int halfOfRemainSpace = (owner.bounds.x + owner.mainSize) / 2;
+                item.setPosition(halfOfRemainSpace - totalWidthOfItems/2 + widthOfPreviousItems, item.bounds.y);
+            } else {
+                //more than one item
+                int spaceAround = getRemainingMainSpace() / (itemsInLine.size());
+                spaceAround /= 2;
+                if(owner.isDirectionReversed()){
+                    item.setPosition(spaceAround + (itemsInLine.size()-1 -j) * 2 * spaceAround + widthOfPreviousItems, item.bounds.y);
+                } else {
+                    item.setPosition(j * 2 * spaceAround + widthOfPreviousItems + spaceAround, item.bounds.y);
+                }
+            }
+
+        } else {
+            //flex start
+            if (owner.isDirectionReversed())
+                item.setPosition(owner.mainSize - widthOfPreviousItems - item.bounds.width , item.bounds.y);
+            else
+                item.setPosition(widthOfPreviousItems, item.bounds.y);
+        }
+    }
+
+
 
 }

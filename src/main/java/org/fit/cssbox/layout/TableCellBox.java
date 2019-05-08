@@ -34,7 +34,7 @@ import org.w3c.dom.Element;
  * A box that represents a single table cell.
  * @author burgetr
  */
-public class TableCellBox extends BlockBox
+public class TableCellBox extends FlexItemBlockBox
 {
     private static Logger log = LoggerFactory.getLogger(TableCellBox.class);
 

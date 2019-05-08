@@ -28,7 +28,7 @@ import org.w3c.dom.Element;
  * A class that represents a group of table lines - the table body, header or footer.
  * @author burgetr
  */
-public class TableBodyBox extends BlockBox
+public class TableBodyBox extends FlexItemBlockBox
 {
     /** The table the body belongs to */
     protected TableBox ownerTable;

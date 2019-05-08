@@ -8,7 +8,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class FlexContainerBlockBox extends BlockBox {
+public class FlexContainerBlockBox extends FlexItemBlockBox {
 
     public static final CSSProperty.FlexDirection FLEX_DIRECTION_ROW = CSSProperty.FlexDirection.ROW;
     public static final CSSProperty.FlexDirection FLEX_DIRECTION_ROW_REVERSE = CSSProperty.FlexDirection.ROW_REVERSE;
@@ -39,20 +39,31 @@ public class FlexContainerBlockBox extends BlockBox {
     public static final CSSProperty.AlignItems ALIGN_ITEMS_STRETCH = CSSProperty.AlignItems.STRETCH;
 
 
+    /** flex direction specified by the style */
     protected CSSProperty.FlexDirection flexDirection;
+    /** flex wrap specified by the style */
     protected CSSProperty.FlexWrap flexWrap;
+    /** justify content specified by the style */
     protected CSSProperty.JustifyContent justifyContent;
+    /** align content specified by the style */
     protected CSSProperty.AlignContent alignContent;
+    /** align items specified by the style */
     protected CSSProperty.AlignItems alignItems;
 
+    /** main size of this box (in horizontal (row) container it is width, in vertical it is height) */
     protected int mainSize;
+    /** cross size of this box (in horizontal (row) container it is height, in vertical it is width) */
     protected int crossSize;
 
+    /** defines if is main size set by content */
     protected boolean mainSizeSetByCont;
 
+    /** first flex line (row or column based on container direction) of this container */
     protected FlexLine firstFlexLine;
 
-
+    /**
+     * Creates new instance of flex container block box.
+     */
     public FlexContainerBlockBox(Element n, Graphics2D g, VisualContext ctx) {
         super(n, g, ctx);
         typeoflayout = new FlexBoxLayoutManager(this);
@@ -61,6 +72,7 @@ public class FlexContainerBlockBox extends BlockBox {
         mainSizeSetByCont = false;
     }
 
+    /** Converts an inline box to a flex container block box */
     public FlexContainerBlockBox(InlineBox src) {
         super(src);
         typeoflayout = new FlexBoxLayoutManager(this);
@@ -69,6 +81,9 @@ public class FlexContainerBlockBox extends BlockBox {
         mainSizeSetByCont = false;
     }
 
+    /**
+     * Sets inceptive main size before layouting its content.
+     */
     public void setInceptiveMainSize() {
         if (isRowContainer()) {
             mainSize = getContentWidth();
@@ -81,6 +96,9 @@ public class FlexContainerBlockBox extends BlockBox {
         }
     }
 
+    /**
+     * Sets inceptive cross size before layouting its content.
+     */
     public void setInceptiveCrossSize() {
         if (isRowContainer()) {
             crossSize = getContentHeight();
@@ -96,6 +114,9 @@ public class FlexContainerBlockBox extends BlockBox {
         loadFlexContainerStyles();
     }
 
+    /**
+     * Loads styles belonging to flex contaieners.
+     */
     public void loadFlexContainerStyles() {
         flexDirection = style.getProperty("flex-direction");
         if (flexDirection == null) flexDirection = FLEX_DIRECTION_ROW;
@@ -114,6 +135,10 @@ public class FlexContainerBlockBox extends BlockBox {
 
     }
 
+    /**
+     * Returns true if flex-direction of this container is row or row-reverse.
+     * @return true if is row container (horizontal), else if column (vertical)
+     */
     public boolean isRowContainer() {
         if (flexDirection == FLEX_DIRECTION_ROW || flexDirection == FLEX_DIRECTION_ROW_REVERSE)
             return true;
@@ -121,6 +146,10 @@ public class FlexContainerBlockBox extends BlockBox {
             return false;
     }
 
+    /**
+     * Returns true if flex-direction of this container is column-reverse or row-reverse.
+     * @return true if is reversed container, else if is not
+     */
     public boolean isDirectionReversed() {
         if (flexDirection == FLEX_DIRECTION_ROW_REVERSE || flexDirection == FLEX_DIRECTION_COLUMN_REVERSE)
             return true;
@@ -128,6 +157,10 @@ public class FlexContainerBlockBox extends BlockBox {
             return false;
     }
 
+    /**
+     * Main method for layouting content of horizontal (row) container.
+     * @param listItems ArrayList with items
+     */
     protected void layoutItemsInRow(ArrayList<FlexItemBlockBox> listItems) {
         //sort listItems according to flex property order
         Collections.sort(listItems);
@@ -137,7 +170,6 @@ public class FlexContainerBlockBox extends BlockBox {
             Item.hypotheticalMainSize = Item.setHypotheticalMainSize(this);
             Item.hypotheticalMainSize = Item.boundFlexBasisByMinAndMax(Item.hypotheticalMainSize);
             Item.fixRightMargin();
-
         }
 
         ArrayList<FlexLine> lines = new ArrayList<>();
@@ -166,12 +198,18 @@ public class FlexContainerBlockBox extends BlockBox {
             Item.bounds.width = Item.hypotheticalMainSize + Item.padding.left + Item.padding.right + Item.border.left + Item.border.right + Item.margin.left + Item.margin.right;
             Item.content.width = Item.hypotheticalMainSize;
 
-
-            //todo, pri row - pokud je kontejner height v % nebo nezadano a item ma height v %, tak to hodi nulu(i pro min-height)
-
-            Item.bounds.height = Item.totalHeight();
-            Item.content.height = Item.totalHeight() - Item.padding.top - Item.padding.bottom - Item.border.top - Item.border.bottom - Item.margin.top - Item.margin.bottom;
-
+            if (Item.crossSizeSetByCont) {
+                if(Item.getSubBoxNumber() != 0) {
+                    Item.content.height = Item.getSubBox(Item.getSubBoxNumber() - 1).getBounds().y
+                            + Item.getSubBox(Item.getSubBoxNumber() - 1).getBounds().height;
+                    Item.bounds.height = Item.content.height + Item.padding.top + Item.padding.bottom + Item.border.top + Item.border.bottom + Item.margin.top + Item.margin.bottom;
+                    if(crossSize < Item.bounds.height)
+                        crossSize = Item.bounds.height;
+                }
+            } else {
+                Item.bounds.height = Item.totalHeight();
+                Item.content.height = Item.totalHeight() - Item.padding.top - Item.padding.bottom - Item.border.top - Item.border.bottom - Item.margin.top - Item.margin.bottom;
+            }
 
         }
 
@@ -179,7 +217,6 @@ public class FlexContainerBlockBox extends BlockBox {
         for (int i = 0; i < listItems.size(); i++) {
             FlexItemBlockBox Item = listItems.get(i);
             if (Item.crossSizeSetByPercentage) {
-                //je zadano height: [percentage] nebo height: auto
                 for (int j = 0; j < Item.getSubBoxNumber(); j++) {
                     if (j == Item.getSubBoxNumber() - 1)
                         Item.content.height += Item.getSubBox(j).getContentHeight() + Item.getSubBox(j).getContentY();
@@ -191,7 +228,7 @@ public class FlexContainerBlockBox extends BlockBox {
 
         }
 
-        //nastaveni velikosti line
+        //set of line height
         for (int i = 0; i < lines.size(); i++) {
             lines.get(i).setLineCrossSize();
         }
@@ -204,7 +241,7 @@ public class FlexContainerBlockBox extends BlockBox {
             for (int y = 0; y < i; y++) {
                 sumOfPreviousLinesHeights += lines.get(y).getHeight();
             }
-            flexLine.setY(sumOfPreviousLinesHeights);
+            ((FlexLineRow)flexLine).setY(sumOfPreviousLinesHeights);
             flexLine.applyAlignContent(lines, i);
 
             //set Y coord of items
@@ -213,7 +250,9 @@ public class FlexContainerBlockBox extends BlockBox {
         }
 
         //set X coord of items
-        alignByJustifyContent(lines);
+        for (int i = 0; i < lines.size(); i++) {
+            lines.get(i).alignByJustifyContent();
+        }
 
         //set container height
         for (int i = 0; i < lines.size(); i++)
@@ -222,6 +261,11 @@ public class FlexContainerBlockBox extends BlockBox {
     }
 
 
+    /**
+     * Creates first line to ArrayList of lines in parameter based on direction of container.
+     * @param lines ArrayList of line
+     * @return new flex line
+     */
     private FlexLine createFirstLineToList(ArrayList<FlexLine> lines) {
         FlexLine line = firstFlexLine;
         if (line == null) {
@@ -234,6 +278,11 @@ public class FlexContainerBlockBox extends BlockBox {
         return line;
     }
 
+    /**
+     * Creates needed flex lines based on direction of container and fill them widh items.
+     * @param lines
+     * @param items
+     */
     private void createAndFillLines(ArrayList<FlexLine> lines, ArrayList<FlexItemBlockBox> items) {
         FlexLine line = createFirstLineToList(lines);
 
@@ -261,6 +310,10 @@ public class FlexContainerBlockBox extends BlockBox {
             Collections.reverse(lines);
     }
 
+    /**
+     * Fixes height of container after layouting items by height of item if needed (for example after align-items: baseline).
+     * @param Item flex item
+     */
     protected void fixContainerHeight(FlexItemBlockBox Item){
         if (!hasFixedHeight()) {
             //height is not fixed
@@ -297,6 +350,10 @@ public class FlexContainerBlockBox extends BlockBox {
         }
     }
 
+    /**
+     * Distributes remaining space in main size of container to items based on their flex-grow CSS property in each line.
+     * @param lines flex lines with items
+     */
     private void handleFlexGrow(ArrayList<FlexLine> lines){
         //todo: distribute rest of positive size when some item after shrink use its max width size
 
@@ -346,6 +403,10 @@ public class FlexContainerBlockBox extends BlockBox {
         }
     }
 
+    /**
+     * Distributes overflown (negative) space in main size of container to items based on their flex-shrink CSS property in each line.
+     * @param lines flex lines with items
+     */
     private void handleFlexShrink(ArrayList<FlexLine> lines) {
         //todo: distribute rest of negative size when some item after shrink use its min width size or minimal content
 
@@ -373,131 +434,43 @@ public class FlexContainerBlockBox extends BlockBox {
                 continue;
 
             for (int j = 0; j < line.itemsInLine.size(); j++){
-                FlexItemBlockBox itemInRow = line.itemsInLine.get(j);
+                FlexItemBlockBox itemInLine = line.itemsInLine.get(j);
 
                 if(isRowContainer()) {
-                    int result = (int) (availwidth - pieceOfOverflowSize * itemInRow.flexShrinkValue);
+                    int result = (int) (availwidth - pieceOfOverflowSize * itemInLine.flexShrinkValue);
 
-                    if (itemInRow.hypotheticalMainSize + result < itemInRow.min_size.width && itemInRow.min_size.width != -1) {
-                        itemInRow.hypotheticalMainSize = itemInRow.min_size.width;
-                    } else if(itemInRow.hypotheticalMainSize + result < itemInRow.getMinimalContentWidth()) {
+                    if (itemInLine.hypotheticalMainSize + result < itemInLine.min_size.width && itemInLine.min_size.width != -1) {
+                        itemInLine.hypotheticalMainSize = itemInLine.min_size.width;
+                    } else if(itemInLine.hypotheticalMainSize + result < itemInLine.getMinimalContentWidth()) {
                         //item should shrink less than its main size content, it is not possible
-                        itemInRow.hypotheticalMainSize = itemInRow.getMinimalContentWidth();
+                        itemInLine.hypotheticalMainSize = itemInLine.getMinimalContentWidth();
                     }else
-                        itemInRow.hypotheticalMainSize += result;
+                        itemInLine.hypotheticalMainSize += result;
                 } else {
-                    int result = (int) (itemInRow.content.height - pieceOfOverflowSize * itemInRow.flexShrinkValue);
+                    int result = (int) (itemInLine.content.height - pieceOfOverflowSize * itemInLine.flexShrinkValue);
 
-                    if (result < itemInRow.min_size.height && itemInRow.min_size.height != -1) {
-                        itemInRow.content.height = itemInRow.min_size.height;
-                    } else if(itemInRow.getSubBoxNumber() != 0 && result < itemInRow.getSubBox(getSubBoxNumber()-1).bounds.y + itemInRow.getSubBox(getSubBoxNumber()-1).bounds.height) {
+                    if (result < itemInLine.min_size.height && itemInLine.min_size.height != -1) {
+                        itemInLine.content.height = itemInLine.min_size.height;
+                    } else if(itemInLine.getSubBoxNumber() != 0 && result < itemInLine.getSubBox(itemInLine.getSubBoxNumber()-1).bounds.y + itemInLine.getSubBox(itemInLine.getSubBoxNumber()-1).bounds.height) {
                         //item should shrink less than its cross size content, it is not possible
-                        itemInRow.content.height = itemInRow.getSubBox(getSubBoxNumber()-1).bounds.y + itemInRow.getSubBox(getSubBoxNumber()-1).bounds.height;
+                        itemInLine.content.height = itemInLine.getSubBox(itemInLine.getSubBoxNumber()-1).bounds.y + itemInLine.getSubBox(itemInLine.getSubBoxNumber()-1).bounds.height;
                     } else
-                        itemInRow.content.height = result;
+                        itemInLine.content.height = result;
 
-                    itemInRow.bounds.height = itemInRow.content.height +
-                            itemInRow.margin.top + itemInRow.margin.bottom +
-                            itemInRow.padding.top + itemInRow.padding.bottom +
-                            itemInRow.border.top + itemInRow.border.bottom;
+                    itemInLine.bounds.height = itemInLine.content.height +
+                            itemInLine.margin.top + itemInLine.margin.bottom +
+                            itemInLine.padding.top + itemInLine.padding.bottom +
+                            itemInLine.border.top + itemInLine.border.bottom;
                 }
             }
         }
 
     }
 
-    private void alignByJustifyContent(ArrayList<FlexLine> lines){
-         for (int i = 0; i < lines.size(); i++) {
-             FlexLine flexLine = lines.get(i);
-             int widthOfPreviousItems = 0;
-             int totalWidthOfItems = 0;
-             for(int j = 0; j < flexLine.itemsInLine.size(); j++)
-                 totalWidthOfItems += flexLine.itemsInLine.get(j).getWidth();
-
-             if((isDirectionReversed() || justifyContent == JUSTIFY_CONTENT_FLEX_END) && justifyContent != JUSTIFY_CONTENT_SPACE_BETWEEN && justifyContent != JUSTIFY_CONTENT_FLEX_START) {
-                 for (int j = flexLine.itemsInLine.size() - 1; j >= 0; j--) {
-                     FlexItemBlockBox item = flexLine.itemsInLine.get(j);
-                     applyJustifyContent(flexLine, item, widthOfPreviousItems, j, totalWidthOfItems);
-                     widthOfPreviousItems += item.getWidth();
-
-                 }
-             } else {
-                 for (int j = 0; j < flexLine.itemsInLine.size(); j++) {
-                     FlexItemBlockBox item = flexLine.itemsInLine.get(j);
-                     applyJustifyContent(flexLine, item, widthOfPreviousItems, j, totalWidthOfItems);
-                     widthOfPreviousItems += item.getWidth();
-                 }
-             }
-         }
-    }
-
-    private void applyJustifyContent(FlexLine line , FlexItemBlockBox item, int widthOfPreviousItems, int j, int totalWidthOfItems){
-
-        if  (justifyContent == JUSTIFY_CONTENT_FLEX_END) {
-            if (isDirectionReversed())
-                item.setPosition(widthOfPreviousItems, item.bounds.y);
-            else
-                item.setPosition(mainSize - widthOfPreviousItems - item.bounds.width , item.bounds.y);
-
-        } else if (justifyContent == JUSTIFY_CONTENT_CENTER) {
-            int halfOfRemainSpace = (mainSize) / 2;
-            item.setPosition(halfOfRemainSpace - totalWidthOfItems/2 + widthOfPreviousItems, item.bounds.y);
-
-        } else if (justifyContent == JUSTIFY_CONTENT_SPACE_BETWEEN) {
-            if(line.itemsInLine.size()-1 == 0 || totalWidthOfItems > mainSize){
-                //only one item or items are outside of container - it works like start
-                if (isDirectionReversed())
-                    item.setPosition(mainSize - widthOfPreviousItems - item.bounds.width , item.bounds.y);
-                else
-                    item.setPosition(widthOfPreviousItems, item.bounds.y);
-
-            } else {
-                int spaceBetween = 0;
-
-                if(isDirectionReversed()) {
-                    if(j == 0) {
-                        item.setPosition(mainSize -item.bounds.width, item.bounds.y);
-                    } else if (j == line.itemsInLine.size()-1) {
-                        item.setPosition(0, item.bounds.y);
-                    } else {//it is not first item in row
-                        spaceBetween = line.getRemainingMainSpace() / (line.itemsInLine.size() - 1);
-                        item.setPosition(spaceBetween * (line.itemsInLine.size()-1 -j) + totalWidthOfItems - widthOfPreviousItems - item.bounds.width, item.bounds.y);
-                    }
-                } else {
-                    if (j == 0) {
-                        item.setPosition(0, item.bounds.y);
-                    } else {//it is not first item in row
-                        spaceBetween = line.getRemainingMainSpace() / (line.itemsInLine.size() - 1);
-                        item.setPosition(spaceBetween * j + widthOfPreviousItems, item.bounds.y);
-                    }
-                }
-            }
-
-        } else if (justifyContent == JUSTIFY_CONTENT_SPACE_AROUND) {
-            if(line.itemsInLine.size()-1 == 0 || totalWidthOfItems > mainSize){
-                //only one item - it works like center
-                int halfOfRemainSpace = (bounds.x + mainSize) / 2;
-                item.setPosition(halfOfRemainSpace - totalWidthOfItems/2 + widthOfPreviousItems, item.bounds.y);
-            } else {
-                //more than one item
-                int spaceAround = line.getRemainingMainSpace() / (line.itemsInLine.size());
-                spaceAround /= 2;
-                if(isDirectionReversed()){
-                        item.setPosition(spaceAround + (line.itemsInLine.size()-1 -j) * 2 * spaceAround + widthOfPreviousItems, item.bounds.y);
-                } else {
-                        item.setPosition(j * 2 * spaceAround + widthOfPreviousItems + spaceAround, item.bounds.y);
-                }
-            }
-
-        } else {
-            //flex start
-            if (isDirectionReversed())
-                item.setPosition(mainSize - widthOfPreviousItems - item.bounds.width , item.bounds.y);
-            else
-                item.setPosition(widthOfPreviousItems, item.bounds.y);
-        }
-    }
-
+    /**
+     * Main method for layouting content of vertical (column) container.
+     * @param items ArrayList with items
+     */
     protected void layoutItemsInColumn(ArrayList<FlexItemBlockBox> items){
         //sort items according to flex property order
         Collections.sort(items);
@@ -514,29 +487,31 @@ public class FlexContainerBlockBox extends BlockBox {
             FlexItemBlockBox Item = items.get(i);
 
             Item.setCrossSize(this);
-            if(Item.crossSizeSetByCont){
-                Item.content.width = Item.getMaximalContentWidth();
-            }
+
             Item.fixRightMargin();
 
+            if(Item.crossSizeSetByCont){
+                Item.content.width = Item.getMaximalContentWidth();
+                if(Item.content.width > crossSize)
+                    Item.content.width = crossSize  - (Item.padding.left + Item.padding.right + Item.border.left + Item.border.right + Item.margin.left + Item.margin.right);
+            }
             Item.setAvailableWidth(Item.content.width + Item.padding.left + Item.padding.right + Item.border.left + Item.border.right + Item.margin.left + Item.margin.right);
-
         }
-
-
 
         for (int i = 0; i < items.size(); i++) {
             FlexItemBlockBox Item = items.get(i);
 
-            if (!Item.contblock)  //block elements containing inline elements only
+            if (!Item.contblock)  //item contains inline elements only
                 Item.layoutInline();
-            else //block elements containing block elements
+            else //item contains at least one block element, layout all as blocks
                 Item.layoutBlocks();
 
             Item.fixRightMargin(); //when width was set - margin right was set to container end (like for blocks) which is not right
 
             if(Item.crossSizeSetByCont){
                 Item.content.width = Item.getMaximalContentWidth();
+                if(Item.content.width > crossSize)
+                    Item.content.width = crossSize  - (Item.padding.left + Item.padding.right + Item.border.left + Item.border.right + Item.margin.left + Item.margin.right);
             }
 
             Item.bounds.width = Item.content.width + Item.padding.left + Item.padding.right + Item.border.left + Item.border.right + Item.margin.left + Item.margin.right;
@@ -551,32 +526,40 @@ public class FlexContainerBlockBox extends BlockBox {
         ArrayList<FlexLine> lines = new ArrayList<>();
         createAndFillLines(lines, items);
 
-        for (int i = 0; i < lines.size(); i++) {
+        for (int i = 0; i < lines.size(); i++)
             lines.get(i).setLineCrossSize();
-        }
-        //flex grow and shrink
 
+        //flex grow and shrink
         handleFlexGrow(lines);
         handleFlexShrink(lines);
 
-
-        //ZDE SE NASTAVUJE POZICE
-
-        int sumOfLineWidths = 0;
-
+        //setting of line height
         for (int i = 0; i < lines.size(); i++) {
-            FlexLine lineColumn = lines.get(i);
-            int sumOfItemHeights = 0;
-            for(int j = 0; j < lineColumn.itemsInLine.size(); j++){
-                FlexItemBlockBox item = lineColumn.itemsInLine.get(j);
-                item.setPosition(sumOfLineWidths, sumOfItemHeights);
-                sumOfItemHeights += item.getHeight();
-
-            }
-
-            sumOfLineWidths+= lineColumn.getWidth();
+            lines.get(i).setLineCrossSize();
+            if(lines.get(i).height > mainSize)
+                mainSize = lines.get(i).height;
         }
 
+
+        for (int i = 0; i < lines.size(); i++) {
+            FlexLine flexLine = lines.get(i);
+
+            int sumOfPreviousLinesWidths = 0;
+            for (int y = 0; y < i; y++) {
+                sumOfPreviousLinesWidths += lines.get(y).getWidth();
+            }
+            ((FlexLineColumn)flexLine).setX(sumOfPreviousLinesWidths);
+            flexLine.applyAlignContent(lines, i);
+
+            //set X coord of items
+            flexLine.applyAlignItemsAndSelf();
+
+        }
+
+        //set Y coord of items
+        for (int i = 0; i < lines.size(); i++) {
+            lines.get(i).alignByJustifyContent();
+        }
     }
 
 }

@@ -33,7 +33,7 @@ import org.w3c.dom.Element;
  * 
  * @author radek
  */
-public class InlineBlockBox extends BlockBox implements InlineElement
+public class InlineBlockBox extends FlexItemBlockBox implements InlineElement
 {
     /** vertical box alignment specified by the style */
     private CSSProperty.VerticalAlign valign;

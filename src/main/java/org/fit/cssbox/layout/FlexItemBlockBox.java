@@ -5,6 +5,11 @@ import org.w3c.dom.Element;
 
 import java.awt.*;
 
+/**
+ * Box for flex item, which is direct child of flex container.
+ *
+ * @author Ondry
+ */
 public class FlexItemBlockBox extends BlockBox  implements Comparable<FlexItemBlockBox>  {
 
     public static final CSSProperty.AlignSelf ALIGN_SELF_AUTO = CSSProperty.AlignSelf.AUTO;
@@ -19,30 +24,40 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable<FlexItemBl
     public static final CSSProperty.FlexBasis FLEX_BASIS_PERCENTAGE = CSSProperty.FlexBasis.percentage;
     public static final CSSProperty.FlexBasis FLEX_BASIS_AUTO = CSSProperty.FlexBasis.AUTO;
 
-    public static final CSSProperty.FlexGrow FLEX_GROW_NUMBER = CSSProperty.FlexGrow.number;
-
-    public static final CSSProperty.FlexShrink FLEX_SHRINK_NUMBER = CSSProperty.FlexShrink.number;
-
-
+    /** align self specified by the style */
+    protected CSSProperty.AlignSelf alignSelf;
     /** flex basis specified by the style */
-                                                //INITIALS
-    protected CSSProperty.AlignSelf alignSelf; //auto
-    protected CSSProperty.FlexBasis flexBasis; // auto
-    protected CSSProperty.FlexGrow flexGrow; // 0
-    protected CSSProperty.FlexShrink flexShrink; // 1
-    protected CSSProperty.Order flexOrder; //0
+    protected CSSProperty.FlexBasis flexBasis;
+    /** flex grow specified by the style */
+    protected CSSProperty.FlexGrow flexGrow;
+    /** flex shrink specified by the style */
+    protected CSSProperty.FlexShrink flexShrink;
+    /** order specified by the style */
+    protected CSSProperty.Order flexOrder;
 
+    /** float value of flex grow specified by style */
     protected float flexGrowValue;
+    /** float value of flex shrink specified by style */
     protected float flexShrinkValue;
+
+    /** int value of order specified by style */
     protected int flexOrderValue;
 
+    /** defines if flex basis is set by content */
     protected boolean flexBasisSetByCont;
 
+    /** hypotetical main size of flex item which is width in horizontal flex container and height in vertical flex container.*/
     protected int hypotheticalMainSize;
 
+    /** defines if cross size of flex item is set by content */
     protected boolean crossSizeSetByCont;
+
+    /** defines if flex basis is set by percentage value */
     protected boolean crossSizeSetByPercentage;
 
+    /**
+     * Creates new instance of flex item block box.
+     */
     public FlexItemBlockBox(Element n, Graphics2D g, VisualContext ctx) {
         super(n, g, ctx);
         isblock = true;
@@ -52,6 +67,7 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable<FlexItemBl
         crossSizeSetByPercentage = false;
     }
 
+    /** Converts an inline box to a flex item block box */
     public FlexItemBlockBox(InlineBox src) {
         super(src);
         isblock = true;
@@ -74,6 +90,9 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable<FlexItemBl
 
     }
 
+    /**
+     * Loads styles belonging to flex items. Also sets values to flex factors (flex grow, flex shrink) and flex order of this box.
+     */
     public void loadFlexItemsStyles(){
 
         alignSelf = style.getProperty("align-self");
@@ -95,7 +114,9 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable<FlexItemBl
         setFlexOrder();
     }
 
-    //ZDE SE RESI NUMBER
+    /**
+     * Sets value of flex factor (flex grow or flex shrink) of this box.
+     */
     private void setFactorValues() {
         Term<?> len = style.getValue("flex-grow", false);
         flexGrowValue = setFactor(len, true);
@@ -103,6 +124,12 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable<FlexItemBl
         flexShrinkValue = setFactor(len, false);
     }
 
+    /**
+     * Sets flex factor value of TermList.
+     * @param len Termlist with these values
+     * @param isGrow defines if it is flex grow (true) or flex shrink (false)
+     * @return flex factor value
+     */
     private float setFactor(Term<?> len, boolean isGrow){
         float ret;
         if(len != null) {
@@ -115,6 +142,9 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable<FlexItemBl
         return ret;
     }
 
+    /**
+     * Sets value of flex order into flexOrderValue of this box.
+     */
     private void setFlexOrder(){
         TermInteger len = (TermInteger) style.getValue("order", false);
 
@@ -124,6 +154,9 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable<FlexItemBl
             flexOrderValue = 0;
     }
 
+    /**
+     * Disables floats of this box. Flex items dont use these styles.
+     */
     protected void disableFloats(){
         floatY = 0;
         floatXl = 0;
@@ -131,16 +164,21 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable<FlexItemBl
         floating = CSSProperty.Float.NONE;
     }
 
+    /**
+     * Returns hypotetical main size of box which is width in horizontal flex container (parent) and height in vertical flex container.
+     * @param container parent box
+     * @return computed hypotetical main size
+     */
     protected int setHypotheticalMainSize(FlexContainerBlockBox container){
         CSSDecoder dec = new CSSDecoder(container.ctx);
         int contw = container.getContentWidth();
 
         if(flexBasis == FLEX_BASIS_LENGTH || flexBasis == FLEX_BASIS_PERCENTAGE) {
-            //used flex-basis
+            //flex-basis is set by style
             if(flexBasis == FLEX_BASIS_PERCENTAGE && !container.isRowContainer()) {
+                //COLUMN
                 if(container.content.height != 0){
                     hypotheticalMainSize = dec.getLength(getLengthValue("flex-basis"), false, 0, 0, container.mainSize);
-
                 } else {
                     if (style.getProperty("height") == CSSProperty.Height.AUTO || style.getProperty("height") == null || style.getProperty("height") == CSSProperty.Height.valueOf("percentage")) {
                         flexBasisSetByCont = true;
@@ -153,7 +191,7 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable<FlexItemBl
                 hypotheticalMainSize = dec.getLength(getLengthValue("flex-basis"), false, 0, 0, contw);
             }
 
-            //when used flex basis is smaller than min content -> flex basis = min content)
+            //when setted flex basis in row container is smaller than min content -> flex basis = min content
             if(container.isRowContainer()) {
                 if (hypotheticalMainSize < getMinimalContentWidth())
                     hypotheticalMainSize = getMinimalContentWidth();
@@ -179,11 +217,10 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable<FlexItemBl
                 if (style.getProperty("height") == CSSProperty.Height.AUTO  || style.getProperty("height") == null) {
                     flexBasisSetByCont = true;
                 } else if(style.getProperty("height") == CSSProperty.Height.valueOf("percentage")){
-                    if(container.content.height != 0) {
+                    if(container.content.height != 0)
                         hypotheticalMainSize = dec.getLength(getLengthValue("height"), false, 0, 0, container.mainSize);
-                    } else {
+                    else
                         flexBasisSetByCont = true;
-                    }
                 } else {
                     hypotheticalMainSize = dec.getLength(getLengthValue("height"), false, 0, 0, 0); //use height
                     flexBasisSetByCont = false;
@@ -192,12 +229,18 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable<FlexItemBl
         }
 
 
+        //set flex basis content in row container, in column container it is solved later
         if(flexBasisSetByCont && container.isRowContainer())
             setFlexBasisBasedByContent();
 
         return hypotheticalMainSize;
     }
 
+    /**
+     * Bounds (limit) flex basis by min-width and max-width (min-height and max-height in column container)
+     * @param value flex basis to by bound
+     * @return bounded flex basis
+     */
     protected int boundFlexBasisByMinAndMax(int value) {
         if(((FlexContainerBlockBox) parent).isRowContainer()) {
             if (min_size.width != -1)
@@ -221,12 +264,17 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable<FlexItemBl
 
     }
 
+    /**
+     * Sets hypotetical main size to max content width in row container.
+     */
     private void setFlexBasisBasedByContent(){
-        System.out.println("FLEX BASIS JE SETNUTA CONTENTEM");
         hypotheticalMainSize = getMaximalContentWidth();
     }
 
 
+    /**
+     * Fixes right margin because in block box it is set to different greater value
+     */
     protected void fixRightMargin(){
         FlexContainerBlockBox parent = (FlexContainerBlockBox) this.getContainingBlockBox();
         CSSDecoder decoder = new CSSDecoder(parent.ctx);
@@ -238,6 +286,10 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable<FlexItemBl
 
     }
 
+    /**
+     * Defines if this item has not align self value auto.
+     * @return true if align self is set by styles
+     */
     protected boolean isNotAlignSelfAuto(){
         if(alignSelf == CSSProperty.AlignSelf.AUTO)
             return false;
@@ -250,6 +302,10 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable<FlexItemBl
         return this.flexOrderValue - o.getFlexOrderValue();
     }
 
+    /**
+     * Sets cross size of box which is height in horizontal flex container (parent) and width in vertical flex container.
+     * @param container parent box (flex container)
+     */
     protected void setCrossSize(FlexContainerBlockBox container){
         CSSDecoder dec = new CSSDecoder(ctx);
         if(container.isRowContainer()) {
@@ -266,7 +322,9 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable<FlexItemBl
             int contw = container.crossSize;
             int width = dec.getLength(getLengthValue("width"), false, -1, -1, contw);
 
+            //is width set
             if(width != -1){
+                //yes, set it to content and bound it by min and max
                 content.width = width;
                 if(content.width < min_size.width && min_size.width != -1)
                     content.width = min_size.width;
@@ -274,6 +332,7 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable<FlexItemBl
                 if(content.width > max_size.width && max_size.width != -1)
                     content.width = max_size.width;
             } else {
+                //no, set to max content width
                 content.width = getMaximalContentWidth();
 
                 if(content.width + margin.left + margin.right + padding.left + padding.right + border.right + border.left> container.crossSize) {
@@ -288,6 +347,10 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable<FlexItemBl
         }
     }
 
+    /**
+     * Adjusts height by flex basis in row container.
+     * @param container parent box (flex container)
+     */
     protected void adjustHeight(FlexContainerBlockBox container){
         if(getSubBoxNumber() != 0){
             if(flexBasis != FlexItemBlockBox.FLEX_BASIS_AUTO && flexBasis != FlexItemBlockBox.FLEX_BASIS_CONTENT){
@@ -301,11 +364,14 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable<FlexItemBl
                 content.height = getSubBox(getSubBoxNumber()-1).getContentY() + getSubBox(getSubBoxNumber()-1).getContentHeight();
 
             }
-        } else {
-            content.height = 0;
         }
     }
 
+    /**
+     * Auxiliary method for method adjustHeight.
+     * @param container parent box (flex container)
+     * @return bounded content height
+     */
     protected int boundByHeight(FlexContainerBlockBox container){
         CSSDecoder dec = new CSSDecoder(ctx);
         int height = dec.getLength(getLengthValue("height"), false, -1, -1, container.mainSize);
@@ -336,37 +402,5 @@ public class FlexItemBlockBox extends BlockBox  implements Comparable<FlexItemBl
 
 
         return content.height;
-    }
-
-    protected int boundByWidth(FlexContainerBlockBox container){
-        CSSDecoder dec = new CSSDecoder(ctx);
-        int width = dec.getLength(getLengthValue("width"), false, -1, -1, container.mainSize);
-        if(width != -1){
-            //height nenastaveno
-            if(style.getProperty("width") == CSSProperty.Width.percentage && container.mainSize == 0)
-                return content.width;
-
-            if(width < content.width) {
-                if(width > hypotheticalMainSize)
-                    content.width = width;
-                else
-                    content.width = hypotheticalMainSize;
-            }
-        } else {
-            int minwidth = dec.getLength(getLengthValue("min-width"), false, -1, -1, container.mainSize);
-            if(minwidth != -1) {
-                //minheight nenastaveno
-                if(style.getProperty("min-width") == CSSProperty.MinWidth.percentage && container.mainSize == 0)
-                    return content.width;
-                if (minwidth < content.width)
-                    if(minwidth > hypotheticalMainSize)
-                        content.width = minwidth;
-                    else
-                        content.width = hypotheticalMainSize;
-            }
-        }
-
-
-        return content.width;
     }
 }

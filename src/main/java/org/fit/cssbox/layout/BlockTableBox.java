@@ -33,7 +33,7 @@ import org.w3c.dom.Element;
  * This class represents the anonymous box created for a block-level table.
  * @author burgetr
  */
-public class BlockTableBox extends BlockBox
+public class BlockTableBox extends FlexItemBlockBox
 {
     private TableBox table;
     private TableCaptionBox caption;

@@ -36,7 +36,7 @@ import cz.vutbr.web.css.CSSProperty.ListStyleType;
  * @author radek
  * @author mantlikf
  */
-public class ListItemBox extends BlockBox
+public class ListItemBox extends FlexItemBlockBox
 {
     private static final String[] RCODE = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
     private static final int[] BVAL = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
