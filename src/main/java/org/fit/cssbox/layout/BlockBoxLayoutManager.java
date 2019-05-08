@@ -34,10 +34,8 @@ public class BlockBoxLayoutManager implements ILayoutManager {
             owner.updateChildSizes();
         }
 
-        //the width should be fixed from this point
 
-        /* Always try to use the full width. If the owner is not in flow, its width
-         * is updated after the layout */
+
         if(owner.parent instanceof FlexItemBlockBox){
             //it is content of flex item
             FlexItemBlockBox item = (FlexItemBlockBox) owner.parent;
