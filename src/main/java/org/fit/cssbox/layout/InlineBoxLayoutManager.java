@@ -1,8 +1,20 @@
 package org.fit.cssbox.layout;
 
+/**
+ * Layout manager for layout of InlineBoxes.
+ *
+ * @author Ondry, Ondra
+ */
 public class InlineBoxLayoutManager implements ILayoutManager {
+
+
+    /** inline box using this layout manager*/
     private InlineBox box;
 
+    /**
+     * Creates an instance of this layout manager.
+     * @param box owner of this manager
+     */
     public InlineBoxLayoutManager(InlineBox box) {
         this.box = box;
     }

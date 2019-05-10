@@ -7,16 +7,16 @@ import java.util.ArrayList;
 /**
  * Layout manager for Flexbox layout.
  *
- * @author Ondry
+ * @author Ondry, Ondra
  */
 public class FlexBoxLayoutManager implements ILayoutManager {
 
-    /** flex container of which items will be using flex layout*/
+    /** flex container using this layout manager */
     private FlexContainerBlockBox container;
 
     /**
      * Creates an instance of this layout manager.
-     * @param container flex container
+     * @param container flex container, owner of this manager
      */
     public FlexBoxLayoutManager(FlexContainerBlockBox container) {
         this.container = container;

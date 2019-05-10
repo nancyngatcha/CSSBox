@@ -1,8 +1,20 @@
 package org.fit.cssbox.layout;
 
+/**
+ * Layout manager for layout of BlockBoxes.
+ *
+ * @author Ondry, Ondra
+ */
 public class BlockBoxLayoutManager implements ILayoutManager {
+
+
+    /** block box using this layout manager*/
     private BlockBox owner;
 
+    /**
+     * Creates an instance of this layout manager.
+     * @param owner owner of this manager
+     */
     public BlockBoxLayoutManager(BlockBox owner) {
         this.owner = owner;
     }
