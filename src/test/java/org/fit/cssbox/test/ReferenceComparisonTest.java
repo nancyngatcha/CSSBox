@@ -41,7 +41,7 @@ public class ReferenceComparisonTest
     public void checkForRegressions() throws MalformedURLException
     {
         ReferenceResults ref = new ReferenceResults();
-        URL url = new URL("file://" + System.getProperty("user.home") + "/tmp/CSSBoxTesting/baseline/nightly-unstable/html4/");
+        URL url = new URL("file:///" + "C:/Users/Ondra" + "/tmp/CSSBoxTesting/baseline/nightly-unstable/html4/css-grid-1_dev/html/");
         TestBatch tester = new TestBatch(url, THREADS);
         
         int errorcnt = 0;
@@ -81,6 +81,7 @@ public class ReferenceComparisonTest
         }
         else
             System.err.println("No tests found, giving up testing.");
+
         Assert.assertTrue("All results passed", errorcnt == 0);
     }
     
