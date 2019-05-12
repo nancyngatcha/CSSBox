@@ -1,9 +1,20 @@
 package org.fit.cssbox.layout;
 
+/**
+ * This class represents layout manager for Block layout
+ *
+ * @author Ondra
+ * @author Ondry
+ */
 public class BlockBoxLayoutManager implements LayoutManager {
 
+    /** Block box*/
     private BlockBox bbox;
 
+    /**
+     * Create a new instance of Block layout
+     * @param bbox block box
+     */
     public BlockBoxLayoutManager(BlockBox bbox) {
         this.bbox = bbox;
     }
@@ -50,6 +61,10 @@ public class BlockBoxLayoutManager implements LayoutManager {
          * is updated after the layout */
         if (bbox.parent instanceof GridItem) {
             GridItem griditem = (GridItem) bbox.parent;
+            bbox.setAvailableWidth(griditem.getAvailableContentWidth());
+            bbox.content.width = griditem.getAvailableContentWidth();
+        } else if (bbox.parent.parent instanceof GridItem) {
+            GridItem griditem = (GridItem) bbox.parent.parent;
             bbox.setAvailableWidth(griditem.getAvailableContentWidth());
             bbox.content.width = griditem.getAvailableContentWidth();
         } else {
