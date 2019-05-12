@@ -29,7 +29,7 @@ import org.w3c.dom.Element;
  * Replaced block box. 
  * @author radek
  */
-public class BlockReplacedBox extends BlockBox implements ReplacedBox
+public class BlockReplacedBox extends GridItem implements ReplacedBox
 {
     protected int boxw; //image width attribute
     protected int boxh; //image height attribute
