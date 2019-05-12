@@ -127,6 +127,7 @@ abstract public class ElementBox extends Box
     /** The map of related pseudo-elements (if any) */
     protected Map<Selector.PseudoElementType, ElementBox> pseudoElements;
 
+    /** Defines which type of layout manager would be used for layout*/
     protected ILayoutManager typeoflayout;
     
     //============================== Computed style ======================
