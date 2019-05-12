@@ -144,7 +144,7 @@ public class HTMLBoxFactory
             String src = HTMLNorm.getAttribute(e, "src");
             rbox.setContentObj(new ReplacedImage(rbox, rbox.getVisualContext(), factory.getBaseURL(), src));
             
-            if (rbox.isBlock())
+            if (rbox.isBlock() || parent instanceof GridWrapperBlockBox)
                 return new BlockReplacedBox(rbox);
             else
                 return rbox;
@@ -205,7 +205,7 @@ public class HTMLBoxFactory
         if (rbox.getContentObj() != null) //the content object has been sucessfuly created
         {
             //convert the type
-            if (rbox.getDisplay() == ElementBox.DISPLAY_BLOCK)
+            if (rbox.getDisplay() == ElementBox.DISPLAY_BLOCK || parent instanceof GridWrapperBlockBox)
                 return new BlockReplacedBox(rbox);
             else //inline boxes are not allowed -- we must create a block formatting context
                 return new InlineBlockReplacedBox(rbox);
