@@ -691,10 +691,17 @@ public class BlockBox extends ElementBox
      * Aligns the subboxes in a line according to the selected alignment settings.
      * @param line The line box to be aligned
      */
-    private void alignLineHorizontally(LineBox line)
-    {
-    	//TODO: align: justify
-        int dif = content.width - line.getLimits() - line.getWidth(); //difference between maximal available and current width
+    private void alignLineHorizontally(LineBox line) {
+        //TODO: align: justify
+        int dif;
+        if (this instanceof GridItem) {
+            GridItem gridItem = (GridItem) this;
+            dif = gridItem.widthcolumnsforitems - gridItem.margin.left - gridItem.margin.right -
+                  gridItem.margin.left - gridItem.padding.left - gridItem.padding.right -
+                  gridItem.border.left - gridItem.border.right - line.getLimits() - line.getWidth();
+        } else {
+            dif = content.width - line.getLimits() - line.getWidth(); //difference between maximal available and current width
+        }
         if (align != ALIGN_LEFT && dif > 0)
         {
             for (int i = line.getStart(); i < line.getEnd(); i++) //all inline boxes on this line
@@ -1964,7 +1971,7 @@ public class BlockBox extends ElementBox
     protected void loadSizes(boolean update)
     {
         CSSDecoder dec = new CSSDecoder(ctx);
-        
+
         //containing box sizes
         int contw = getContainingBlock().width;
         int conth = getContainingBlock().height;
