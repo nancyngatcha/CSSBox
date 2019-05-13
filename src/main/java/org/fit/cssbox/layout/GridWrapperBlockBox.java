@@ -89,12 +89,16 @@ public class GridWrapperBlockBox extends BlockBox {
     /** Is specified only one auto value in explicit grid? */
     protected boolean isGridTemplateColumnsAuto;
 
+    /** Is specified repeat notation in explicit grid rows?*/
+    protected boolean isRepeatRows;
+
     /** There are new rows values (in pixels) after computing auto, min-content or max-content values*/
     protected ArrayList<Integer> arrayofrows = new ArrayList<>();
 
     /** There are new columns values (in pixels) after computing auto, min-content or max-content values*/
     protected ArrayList<Integer> arrayofcolumns = new ArrayList<>();
 
+    protected TermFunction.Repeat.Unit countOfRepeated;
 
     /**
      * Creates new instance of grid container
@@ -145,6 +149,7 @@ public class GridWrapperBlockBox extends BlockBox {
      */
     public void loadGridWrapperStyles() {
 
+//  grid-template-areas
 //        CSSProperty.GridTemplateAreas gridTemplateAreas = style.getProperty("grid-template-areas");
 //
 //        //pokud neni nastaven pouzije se default hodnota
@@ -161,7 +166,6 @@ public class GridWrapperBlockBox extends BlockBox {
         GridGapProcessing();
         GridTemplateRowsColumnsProcessing();
         GridAutoFlowProcessing();
-        System.out.println("\n\n\n");
     }
 
 
@@ -199,12 +203,9 @@ public class GridWrapperBlockBox extends BlockBox {
         if (gridTemplateRows == CSSProperty.GridTemplateRowsColumns.list_values) {
             gridTemplateRowsValues = style.getValue(TermList.class, "grid-template-rows");
             isGridTemplateRows = true;
-            System.out.println("grid-template-rows: " + gridTemplateRowsValues);
         } else if (gridTemplateRows == CSSProperty.GridTemplateRowsColumns.AUTO) {
             isGridTemplateRowsAuto = true;
-            System.out.println("grid-template-rows: auto.");
         } else {
-            System.out.println("grid-template-rows: none");
             isGridTemplateRows = false;
         }
 
@@ -214,13 +215,10 @@ public class GridWrapperBlockBox extends BlockBox {
         if (gridTemplateColumns == CSSProperty.GridTemplateRowsColumns.list_values) {
             gridTemplateColumnsValues = style.getValue(TermList.class, "grid-template-columns");
             isGridTemplateColumns = true;
-            System.out.println("grid-template-columns: " + gridTemplateColumnsValues);
         } else if (gridTemplateColumns == CSSProperty.GridTemplateRowsColumns.AUTO) {
             isGridTemplateColumnsAuto = true;
-            System.out.println("grid-template-columns: auto.");
         } else {
             isGridTemplateColumnsNone = true;
-            System.out.println("grid-template-columns: none");
         }
     }
 
@@ -234,11 +232,9 @@ public class GridWrapperBlockBox extends BlockBox {
         if (gridAutoFlow == null) gridAutoFlow = GRID_AUTO_FLOW_ROW;
 
         if (gridAutoFlow == GRID_AUTO_FLOW_ROW) {
-            System.out.println("grid-auto-flow: row");
             isGridAutoFlowRow = true;
         } else if (gridAutoFlow == GRID_AUTO_FLOW_COLUMN) {
             isGridAutoFlowRow = false;
-            System.out.println("grid-auto-flow: column");
         }
     }
 
@@ -252,7 +248,8 @@ public class GridWrapperBlockBox extends BlockBox {
      * @param contw available width
      * @return true if contains fr unit, false if not
      */
-    protected boolean findUnitsForFr(TermList tmp, CSSDecoder dec, int gap, int contw) {
+    protected boolean findUnitsForFr(TermList tmp, int gap, int contw) {
+        CSSDecoder dec = new CSSDecoder(ctx);
         TermLength.Unit unit;
         TermLengthOrPercent a;
         if (tmp == null) return false;
@@ -316,18 +313,13 @@ public class GridWrapperBlockBox extends BlockBox {
             gAC = CSSProperty.GridAutoRowsColumns.AUTO;
         }
         if (gAC == CSSProperty.GridAutoRowsColumns.length) {
-            System.out.println("grid-auto-columns jsou cislo nebo procenta");
             gridAutoColumns = dec.getLength(getLengthValue("grid-auto-columns"), false, 0, 0, contw);
-            System.out.println("A velikost je: " + gridAutoColumns);
         } else if (gAC == CSSProperty.GridAutoRowsColumns.AUTO) {
-            System.out.println("grid-auto-columns: auto;");
             return false;
         } else if (gAC == CSSProperty.GridAutoRowsColumns.MIN_CONTENT) {
             isMinContentAutoColumn = true;
-            System.out.println("grid-auto-columns: min-content");
         } else if (gAC == CSSProperty.GridAutoRowsColumns.MAX_CONTENT) {
             isMaxContentAutoColumn = true;
-            System.out.println("grid-auto-columns: max-content");
         }
         return true;
     }
@@ -341,21 +333,18 @@ public class GridWrapperBlockBox extends BlockBox {
      */
     protected boolean isGridAutoRows(int conth) {
         CSSDecoder dec = new CSSDecoder(ctx);
-        CSSProperty.GridAutoRowsColumns gAC = style.getProperty("grid-auto-rows");
-        if (gAC == null) {
-            gAC = CSSProperty.GridAutoRowsColumns.AUTO;
+        CSSProperty.GridAutoRowsColumns gAR = style.getProperty("grid-auto-rows");
+        if (gAR == null) {
+            gAR = CSSProperty.GridAutoRowsColumns.AUTO;
         }
-        if (gAC == CSSProperty.GridAutoRowsColumns.length) {
+        if (gAR == CSSProperty.GridAutoRowsColumns.length) {
             gridAutoRows = dec.getLength(getLengthValue("grid-auto-rows"), false, 0, 0, conth);
-        } else if (gAC == CSSProperty.GridAutoRowsColumns.AUTO) {
-            System.out.println("grid-auto-rows: auto");
+        } else if (gAR == CSSProperty.GridAutoRowsColumns.AUTO) {
             return false;
-        } else if (gAC == CSSProperty.GridAutoRowsColumns.MIN_CONTENT) {
+        } else if (gAR == CSSProperty.GridAutoRowsColumns.MIN_CONTENT) {
             isMinContentAutoRow = true;
-            System.out.println("grid-auto-rows: min-content");
-        } else if (gAC == CSSProperty.GridAutoRowsColumns.MAX_CONTENT) {
+        } else if (gAR == CSSProperty.GridAutoRowsColumns.MAX_CONTENT) {
             isMaxContentAutoRow = true;
-            System.out.println("grid-auto-rows: max-content");
         }
         return true;
     }
@@ -494,8 +483,6 @@ public class GridWrapperBlockBox extends BlockBox {
                         }
                     }
                 }
-                System.out.println("radek> " + a);
-                System.out.println("vystup array pred smazanim roztazenych itemu> " + columnID);
                 if (a > 1) {
                     for (int y = 1; y < a; y++) {
                         for (int i = 0; i < getSubBoxNumber(); i++) {
@@ -510,8 +497,6 @@ public class GridWrapperBlockBox extends BlockBox {
                         }
                     }
                 }
-                System.out.println("radek> " + a);
-                System.out.println("vystup array> " + columnID);
                 //prirazeni souradnic automatickym itemum
                 for (int w = 0; w < getSubBoxNumber(); w++) {
                     GridItem griditem = (GridItem) getSubBox(w);
@@ -564,8 +549,6 @@ public class GridWrapperBlockBox extends BlockBox {
 
                     }
                 }
-                System.out.println("sloupec> " + a);
-                System.out.println("vystup array> " + rowID);
                 for (int w = 0; w < getSubBoxNumber(); w++) {
                     GridItem griditem = (GridItem) getSubBox(w);
                     if (griditem.gridItemRowColumnValue.columnStart == 0 && griditem.gridItemRowColumnValue.rowStart == 0) {
@@ -720,6 +703,7 @@ public class GridWrapperBlockBox extends BlockBox {
      * @param maxactualrowline actual row size of grid
      */
     public void onlyFill(int maxactualrowline) {
+
         for (int a = 1; a < maxactualrowline; a++) {
             for (int i = 0; i < getSubBoxNumber(); i++) {
                 GridItem griditem = (GridItem) getSubBox(i);
@@ -729,6 +713,12 @@ public class GridWrapperBlockBox extends BlockBox {
                         break;
                     }
                 }
+            }
+        }
+        if (isRepeatRows) {
+            int count = countOfRepeated.getNumberOfRepetitions();
+            for (int i = arrayofrows.size()-1; i > count; i--) {
+                arrayofrows.remove(i);
             }
         }
     }
@@ -777,7 +767,6 @@ public class GridWrapperBlockBox extends BlockBox {
      */
     public void checkNewSizeOfRowsBigItems() {
         GridItem griditem;
-        System.out.println("array radku> " + arrayofrows);
         for (int i = 0; i < getSubBoxNumber(); i++) {
             griditem = (GridItem) getSubBox(i);
 
@@ -805,7 +794,6 @@ public class GridWrapperBlockBox extends BlockBox {
      */
     public void checkNewSizeOfColumnsBigItems() {
         GridItem griditem;
-        System.out.println("array sloupcu> " + arrayofcolumns);
         for (int i = 0; i < getSubBoxNumber(); i++) {
             griditem = (GridItem) getSubBox(i);
             if ((griditem.gridItemRowColumnValue.columnEnd - griditem.gridItemRowColumnValue.columnStart) > 1) {
@@ -853,7 +841,6 @@ public class GridWrapperBlockBox extends BlockBox {
         if (countofauto != 0) {
             finalautovalue = (content - size - countgaps) / countofauto;
 
-            System.out.println("coutnt" + finalautovalue);
             for (int i = 0; i < arrayofcolumns.size(); i++) {
                 if (arrayofcolumns.get(i) == 0) {
                     arrayofcolumns.remove(i);
@@ -888,10 +875,10 @@ public class GridWrapperBlockBox extends BlockBox {
     }
 
     /**
-     * Calculate how many repeated sizes is specified.
+     * Calculate how many repeated sizes is specified in columns.
      */
-    public void containsRepeat() {
-        //very basic solution of repeat notation
+    public void containsRepeatInColumns() {
+        //very basic solution of repeat notation in columns
         RepeatImpl repeat;
         Term term;
         if (gridTemplateColumnsValues != null) {
@@ -901,12 +888,37 @@ public class GridWrapperBlockBox extends BlockBox {
             } catch (Exception e) {
                   return;
             }
-            TermFunction.Repeat.Unit a = repeat.getNumberOfRepetitions();
+            countOfRepeated = repeat.getNumberOfRepetitions();
             gridTemplateColumnsValues = null;
             CSSDecoder dec = new CSSDecoder(ctx);
-            for (int i = 0; i < a.getNumberOfRepetitions(); i++) {
+            for (int i = 0; i < countOfRepeated.getNumberOfRepetitions(); i++) {
                 arrayofcolumns.add(i, dec.getLength((TermLengthOrPercent) repeat.getRepeatedTerms().get(0), false, 0, 0, getContentWidth()));
             }
+        }
+    }
+
+    /**
+     * Calculate how many repeated sizes is specified in rows.
+     */
+    public void containsRepeatInRows() {
+        //very basic solution of repeat notation in columns
+        RepeatImpl repeat;
+        Term term;
+        if (gridTemplateRowsValues != null) {
+            term = gridTemplateRowsValues.get(0);
+            try {
+                repeat = (RepeatImpl) term;
+            } catch (Exception e) {
+                return;
+            }
+            TermFunction.Repeat.Unit a = repeat.getNumberOfRepetitions();
+            gridTemplateRowsValues = null;
+            CSSDecoder dec = new CSSDecoder(ctx);
+            for (int i = 0; i < a.getNumberOfRepetitions(); i++) {
+                arrayofrows.add(i, dec.getLength((TermLengthOrPercent) repeat.getRepeatedTerms().get(0), false, 0, 0, getContentHeight()));
+            }
+            isRepeatRows = true;
+            maxRowLine = a.getNumberOfRepetitions()+1;
         }
     }
 }

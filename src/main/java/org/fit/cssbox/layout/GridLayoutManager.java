@@ -29,7 +29,6 @@ public class GridLayoutManager implements LayoutManager {
      */
     @Override
     public boolean doLayout(int availw, boolean force, boolean linestart) {
-        System.out.println("DoLayout -> GridLayoutManager");
 
         if (!gridbox.displayed) {
             gridbox.getContent().setSize(0, 0);
@@ -37,23 +36,13 @@ public class GridLayoutManager implements LayoutManager {
             return true;
         }
         int myconth = 0;
-
-        System.out.println("contw: " + gridbox.getContentWidth());
-        System.out.println("conth: " + gridbox.getContentHeight());
-        CSSDecoder dec = new CSSDecoder(gridbox.ctx);
-        System.out.println("content width: " + gridbox.content.width);
-        System.out.println("total height: " + gridbox.totalHeight());
-        System.out.println("content height: " + gridbox.content.height);
-
         gridbox.isGridAutoColumn = gridbox.isGridAutoColumns(gridbox.getContentWidth());
         gridbox.isGridAutoRow = gridbox.isGridAutoRows(gridbox.getContentHeight());
 
-        gridbox.containsRepeat();
+        gridbox.containsRepeatInColumns();
+        gridbox.containsRepeatInRows();
         gridbox.setSizeofGrid();
         gridbox.processAutomaticItems();
-
-        System.out.println("nejvetsi linka sloupce: " + gridbox.maxColumnLine);
-        System.out.println("nejvetsi linka radku: " + gridbox.maxRowLine);
 
         for (int i = 0; i < gridbox.getSubBoxNumber(); i++) {
             GridItem griditem = (GridItem) gridbox.getSubBox(i);
@@ -61,27 +50,21 @@ public class GridLayoutManager implements LayoutManager {
 
 
             if (gridbox.isGridAutoColumn || !gridbox.isGridTemplateColumnsNone) {
-                if (gridbox.findUnitsForFr(gridbox.gridTemplateColumnsValues, dec, gridbox.gapColumn, gridbox.getContentWidth())) {
+                if (gridbox.findUnitsForFr(gridbox.gridTemplateColumnsValues, gridbox.gapColumn, gridbox.getContentWidth())) {
                     gridbox.oneFrUnitColumn = gridbox.computingFrUnits(gridbox.flexFactorSum, gridbox.sumofpixels, gridbox.content.width);
-                    System.out.println("1fr pro column je: " + gridbox.oneFrUnitColumn + "px");
                 }
                 gridbox.flexFactorSum = 0;
                 gridbox.sumofpixels = 0;
             }
 
-
-
             //zjistuju sirku grid itemu
             griditem.setWidthOfItem(gridbox);
             griditem.setAvailableWidth(griditem.widthcolumnsforitems);
 
-            System.out.println(griditem.toString());
-            System.out.println("available width po zjisteni sirky: " + griditem.widthcolumnsforitems);
-
             if (gridbox.getContentHeight() <= 0) {
                 if (!gridbox.isGridAutoRow && gridbox.gridTemplateRowsValues != null) {
-                    gridbox.findUnitsForFr(gridbox.gridTemplateRowsValues, dec, gridbox.gapRow, gridbox.getContentHeight());
-                    myconth += gridbox.sumofpixels; /*+ griditem.getContentHeight() + griditem.padding.top + griditem.padding.bottom + griditem.margin.top + griditem.margin.bottom;*/
+                    gridbox.findUnitsForFr(gridbox.gridTemplateRowsValues, gridbox.gapRow, gridbox.getContentHeight());
+                    myconth += gridbox.sumofpixels;
                     gridbox.sumofpixels = 0;
                     gridbox.flexFactorSum = 0;
                     gridbox.setContentHeight(myconth);
@@ -89,9 +72,8 @@ public class GridLayoutManager implements LayoutManager {
             }
 
             if (!gridbox.isGridAutoRow && gridbox.isGridTemplateRows) {
-                if (gridbox.findUnitsForFr(gridbox.gridTemplateRowsValues, dec, gridbox.gapRow, gridbox.getContentHeight())) {//tady pak zadavat conth pro vysku
+                if (gridbox.findUnitsForFr(gridbox.gridTemplateRowsValues, gridbox.gapRow, gridbox.getContentHeight())) {
                     gridbox.oneFrUnitRow = gridbox.computingFrUnits(gridbox.flexFactorSum, gridbox.sumofpixels, gridbox.getContentHeight());
-                    System.out.println("1fr pro row je: " + gridbox.oneFrUnitRow + "px");
                 }
                 gridbox.flexFactorSum = 0;
                 gridbox.sumofpixels = 0;
@@ -109,7 +91,6 @@ public class GridLayoutManager implements LayoutManager {
                 GridItem griditem = (GridItem) gridbox.getSubBox(i);
                 if (griditem.widthcolumnsforitems == 0) {
                     griditem.widthcolumnsforitems = gridbox.arrayofcolumns.get(griditem.gridItemRowColumnValue.columnStart-1);
-                    System.out.println("/////////////////////////////////////////////////////////////////////jsem to ja" + griditem.toString());
                     griditem.setAvailableWidth(griditem.widthcolumnsforitems);
                 }
             }
@@ -130,43 +111,17 @@ public class GridLayoutManager implements LayoutManager {
         for (int i = 0; i < gridbox.getSubBoxNumber(); i++) {
             GridItem griditem = (GridItem) gridbox.getSubBox(i);
             gridbox.checkRowLine(griditem.gridItemRowColumnValue.rowStart);
-//            gridbox.checkColumnLine(griditem.gridItemRowColumnValue.columnStart);
         }
 
         gridbox.fillRowsSizesToArray();
-//        gridbox.fillColumnsSizesToArray();
-//        boolean isAuto = gridbox.processColumnAuto();
-//        if (isAuto) {
-//            for (int i = 0; i < gridbox.getSubBoxNumber(); i++) {
-//                GridItem griditem = (GridItem) gridbox.getSubBox(i);
-//                if (griditem.widthcolumnsforitems == 0) {
-//                    griditem.widthcolumnsforitems = gridbox.arrayofcolumns.get(griditem.gridItemRowColumnValue.columnStart-1);
-//                    System.out.println("/////////////////////////////////////////////////////////////////////jsem to ja" + griditem.toString());
-//                    griditem.setAvailableWidth(griditem.widthcolumnsforitems);
-//                }
-//            }
-//        }
 
         for (int i = 0; i < gridbox.getSubBoxNumber(); i++) {
             GridItem griditem = (GridItem) gridbox.getSubBox(i);
 
-            if (!gridbox.checkBeforeNewSizes()) {
-                gridbox.checkNewSizeOfRowsBigItems();
-//                gridbox.checkNewSizeOfColumnsBigItems();
-            }
+            if (!gridbox.checkBeforeNewSizes()) gridbox.checkNewSizeOfRowsBigItems();
 
             griditem.setDistanceInHorizontalDirection(gridbox);
             griditem.setDistanceInVerticalDirection(gridbox);
-
-            System.out.println(griditem.toString());
-            System.out.println("distance column from zero: " + griditem.columndistancefromzero);
-            System.out.println("distance row from zero: " + griditem.rowdistancefromzero);
-            System.out.println("Width column: " + griditem.widthcolumnsforitems);
-            System.out.println("width row: " + griditem.widthrowsforitems);
-            System.out.println("contblock: " + griditem.contblock);
-            System.out.println("souradnice itemu> radek start: " + griditem.gridItemRowColumnValue.rowStart + " sloupec start: " + griditem.gridItemRowColumnValue.columnStart);
-            System.out.println("souradnice itemu> radek end: " + griditem.gridItemRowColumnValue.rowEnd + " sloupec end: " + griditem.gridItemRowColumnValue.columnEnd);
-            System.out.println("*****************************");
 
             /*
              * zde probíhá vykreslování itemu
@@ -203,11 +158,8 @@ public class GridLayoutManager implements LayoutManager {
         }
         if (gridbox.getSizeOfArrayOfRows() > gridbox.content.height) gridbox.content.height = gridbox.getSizeOfArrayOfRows();
 
-        System.out.println("content vyska kontejneru> " + gridbox.content.height);
         gridbox.bounds.height += gridbox.content.height + gridbox.emargin.top + gridbox.emargin.bottom +
                 gridbox.padding.top + gridbox.padding.bottom + gridbox.border.top + gridbox.border.bottom;
-        System.out.println("gridbox bounds height>" + gridbox.bounds.height);
-
         return true;
     }
 }

@@ -89,7 +89,7 @@ public class GridItem extends BlockBox {
         gridItemColumnProcessing();
         gridItemRowProcessing();
 
-        System.out.println(gridItemRowColumnValue.toString());
+//        System.out.println(gridItemRowColumnValue.toString());
     }
 
     /**
@@ -214,11 +214,9 @@ public class GridItem extends BlockBox {
                 widthcolumnsforitems += gridbox.arrayofcolumns.get(j);
                 break;
             }
-
             if (gridbox.isGridAutoColumn && gridbox.gridTemplateColumnsValues == null) {
                 widthcolumnsforitems += gridbox.gridAutoColumns;
             } else if (gridbox.isGridAutoColumn && gridbox.gridTemplateColumnsValues != null) {
-                System.out.println("velikost explicitni mrizky: " + gridbox.gridTemplateColumnsValues.size());
                 if ((j + 1) >= gridbox.gridTemplateColumnsValues.size() + 1) {
                     widthcolumnsforitems += gridbox.gridAutoColumns;
                 } else if ((j + 1) < gridbox.gridTemplateColumnsValues.size()) {
@@ -269,6 +267,13 @@ public class GridItem extends BlockBox {
         CSSDecoder dec = new CSSDecoder(ctx);
         int countGridRowGapsInItem;
         for (int j = gridItemRowColumnValue.rowStart - 1; j < gridItemRowColumnValue.rowEnd - 1; j++) {
+
+            //very basic solution of repeat notation
+            if (gridbox.gridTemplateRowsValues == null && gridbox.arrayofrows.size() != 0) {
+                widthrowsforitems += gridbox.arrayofrows.get(j);
+                break;
+            }
+
             if (gridbox.isGridAutoRow && gridbox.gridTemplateRowsValues == null) {
                 if (gridbox.gridTemplateRowsValues == null) {
                     if (gridItemRowColumnValue.rowStart > 1) {
@@ -395,9 +400,7 @@ public class GridItem extends BlockBox {
                     if (gridbox.sumOfLengthForGridTemplateColumnRow(dec, gridbox.gridTemplateRowsValues, gridbox.oneFrUnitRow, gridbox.getContentHeight()) == -1) {
                         rowdistancefromzero += gridbox.arrayofrows.get(j);
                     } else {
-//                        rowdistancefromzero = gridbox.sumOfLengthForGridTemplateColumnRow(dec, gridbox.gridTemplateRowsValues, gridbox.oneFrUnitRow, gridbox.getContentHeight());
                         rowdistancefromzero += gridbox.arrayofrows.get(j);
-//                        h++;
                     }
                 } else {
                     if (gridbox.findSizeOfGridItem(dec, gridbox.gridTemplateRowsValues, j, gridbox.oneFrUnitRow, gridbox.getContentHeight()) == -1) {
@@ -426,8 +429,5 @@ public class GridItem extends BlockBox {
             }
         }
         rowdistancefromzero += (gridItemRowColumnValue.rowStart - 1) * gridbox.gapRow;
-//        if (h != 0) {
-//            rowdistancefromzero += (h - gridbox.gridTemplateRowsValues.size()) * gridbox.gridAutoRows;
-//        }
     }
 }
