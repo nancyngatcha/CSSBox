@@ -243,7 +243,6 @@ public class GridWrapperBlockBox extends BlockBox {
      * Find fr units int grid tracks. If find it counts their number and and calculates all fixed units
      *
      * @param tmp size and count of grid tracks
-     * @param dec decoder to get values of units
      * @param gap size of gap
      * @param contw available width
      * @return true if contains fr unit, false if not
