@@ -48,9 +48,9 @@ public class BlockBoxLayoutManager implements ILayoutManager {
 
 
 
-        if(owner.parent instanceof FlexItemBlockBox){
+        if(owner.getContainingBlockBox() instanceof FlexItemBlockBox && owner.getContainingBlockBox().getContainingBlockBox() instanceof FlexContainerBlockBox){
             //it is content of flex item
-            FlexItemBlockBox item = (FlexItemBlockBox) owner.parent;
+            FlexItemBlockBox item = (FlexItemBlockBox) owner.getContainingBlockBox();
             FlexContainerBlockBox parent = (FlexContainerBlockBox) item.getContainingBlockBox();
             if(parent.isRowContainer()) {
                 owner.setAvailableWidth(item.hypotheticalMainSize);
