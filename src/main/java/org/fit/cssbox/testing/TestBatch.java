@@ -343,7 +343,7 @@ public class TestBatch
                 if (tagBlacklist.contains(tag))
                     blacklisted = true;
             }
-            if (!blacklisted/* && (selected == null || selected.contains(entry.name))*/)
+            if (!blacklisted && (selected == null || selected.contains(entry.name)))
             {
                 try
                 {
