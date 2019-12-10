@@ -18,8 +18,8 @@
  */
 package org.fit.cssbox.demo;
 
-import javax.swing.*;
-
+import javax.swing.*; 
+ 
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
